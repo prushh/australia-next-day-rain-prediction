@@ -7,7 +7,7 @@ object SparkProjectConfig {
     var DEFAULT_PARALLELISM = 1 // number of partitions
 
     private def _sparkSession(master: String): SparkSession = {
-        var builder = SparkSession.builder.appName("CollaborativeLocationActivityRecommendations")
+        var builder = SparkSession.builder.appName("AustraliaNextDayRainPrediction")
 
         if (master != "default") {
             builder = builder.master(master)

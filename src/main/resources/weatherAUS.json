@@ -1,0 +1,143 @@
+{
+  "type": "struct",
+  "fields": [
+    {
+      "name": "Date",
+      "type": "date",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Location",
+      "type": "string",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "MinTemp",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "MaxTemp",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Rainfall",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Evaporation",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Sunshine",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindGustDir",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindGustSpeed",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindDir9am",
+      "type": "string",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindDir3pm",
+      "type": "string",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindSpeed9am",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "WindSpeed3pm",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Humidity9am",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Humidity3pm",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Pressure9am",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Pressure3pm",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Cloud9am",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Cloud3pm",
+      "type": "integer",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Temp9am",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "Temp3pm",
+      "type": "float",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "RainToday",
+      "type": "string",
+      "nullable": true,
+      "metadata": {}
+    },
+    {
+      "name": "RainTomorrow",
+      "type": "string",
+      "nullable": true,
+      "metadata": {}
+    }
+  ]
+}

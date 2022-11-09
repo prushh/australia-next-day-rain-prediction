@@ -10,6 +10,8 @@ lazy val root = (project in file("."))
       idePackagePrefix := Some("it.unibo.andrp"),
       libraryDependencies ++= Seq(
           ("org.apache.spark" %% "spark-core" % sparkVersion).cross(CrossVersion.for3Use2_13),
-          ("org.apache.spark" %% "spark-sql" % sparkVersion).cross(CrossVersion.for3Use2_13)
+          ("org.apache.spark" %% "spark-sql" % sparkVersion).cross(CrossVersion.for3Use2_13),
+          ("org.apache.spark" %% "spark-mllib" % sparkVersion).cross(CrossVersion.for3Use2_13),
+          "com.github.nscala-time" %% "nscala-time" % "2.32.0"
       )
   )
