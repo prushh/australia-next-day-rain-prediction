@@ -1,7 +1,7 @@
 package it.unibo.andrp
 
 import config.SparkProjectConfig
-import utils.TimestampFormatter
+import utils.{ReadCSV, TimestampFormatter}
 
 import org.apache.spark.sql.types.{DataType, StructType}
 import org.apache.spark.ml.classification.LinearSVC
@@ -30,3 +30,26 @@ import scala.util.Using
       .csv("data/weatherAUS.csv")
 
     sparkSession.stop()
+
+    // initialize global support vector
+
+    // load data
+    val data_csv = ReadCSV("data/weatherAUSfinal.csv")
+
+    // divide data into chunks //TODO decidere in che modo dividere i dati
+
+    // while hyp t =! hyp t-1
+
+        // for on chunks/computer
+
+            // split training and testing
+
+            // add global support vectors to training set
+
+            // train svm
+
+            // get new support vectors
+
+        // for on chunks/computer
+
+            // add new support vectors to global support vectors
