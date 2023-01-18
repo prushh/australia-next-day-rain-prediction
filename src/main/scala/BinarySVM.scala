@@ -21,11 +21,6 @@ class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 1000,
     x.lazyZip(w).map((a, b) => a * b).sum
   }
 
-  def predict(x: Vector[Vector[Double]], w: Vector[Double] = weights): Vector[Double] = {
-    // y = sign(x.w + b)
-    x.map(dot_product(_, w).sign)
-  }
-
   // fit
   def fit(): Unit = {
     def reg_gradient(w: Vector[Double], x_i: Vector[Double], y_i: Double, epoch: Int): Vector[Double] = {
@@ -51,14 +46,28 @@ class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 1000,
     @tailrec
     def train(w: Vector[Double], epochs: Int, t: Int = 1): Vector[Double] = epochs match {
       case 0 => w
-      case _ => train(iteration(w, x, y, t), epochs - 1, t + 1)
+      case _ => train(iteration(w, x_bias, y, t), epochs - 1, t + 1)
     }
 
     // update weight
     weights = train(weights, epochs)
   }
 
-  // get_support_vectors
+  // functions to call after fitting
 
-  // get hypothesis
+  def predict(x: Vector[Vector[Double]], w: Vector[Double] = weights): Vector[Double] = {
+    // y = sign(x.w + b)
+    x.map(dot_product(_, w).sign)
+  }
+
+  def get_support_vectors(w: Vector[Double], x:Vector[Vector[Double]]):Vector[Vector[Double]] =
+    x.map(x_i => dot_product(x_i, w) match {
+      case 1 => x_i
+      case -1 => x_i
+    })
+
+  // get hypothesis function
+  def get_hypothesis(): Vector[Double] => Double = {
+    (x: Vector[Double]) => dot_product(x, weights)
+  }
 }

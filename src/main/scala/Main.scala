@@ -9,6 +9,7 @@ import org.apache.spark.mllib.classification.SVMWithSGD
 import org.apache.spark.mllib.evaluation.BinaryClassificationMetrics
 import org.apache.spark.mllib.util.MLUtils
 
+import scala.collection.immutable.Vector
 import scala.io.Source
 import scala.util.Using
 
@@ -39,6 +40,7 @@ import scala.util.Using
         (score, point.label)
     }
 
+
     // Get evaluation metrics.
     val metrics = new BinaryClassificationMetrics(scoreAndLabels)
     val auROC = metrics.areaUnderROC()
@@ -47,11 +49,18 @@ import scala.util.Using
     sparkSession.stop()
 
     // initialize global support vector
+    val global_support_vector : Vector[Vector[Double]] = Vector.empty
+    /*val hyp : Vector[Double] => Double = _ => {
+
+    }*/
 
     // load data
     val data_csv = ReadCSV("data/weatherAUSfinal.csv")
 
-    // divide data into chunks //TODO decidere in che modo dividere i dati
+    // divide data into chunks
+    val num_maps = 40
+    val chunkSize = data_csv.size / num_maps
+    val chunks = data_csv.grouped(chunkSize).toVector
 
     // while hyp t =! hyp t-1
 
@@ -67,4 +76,3 @@ import scala.util.Using
 
         // for on chunks/computer
 
-            // add new support vectors to global support vectors
