@@ -7,7 +7,7 @@ import scala.annotation.tailrec
  * @param y target vector,
  */
 // eta: Double=1, it_num: Int = 10000  param eta learning rate, param it_num iteration number
-class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 1000, eta: Int = 1) {
+class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 100, eta: Int = 1) {
 
   // adding the bias to the x vector
   def add_bias(x: Vector[Vector[Double]]): Vector[Vector[Double]] = x.map(_ :+ 1.0)
@@ -60,11 +60,13 @@ class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 1000,
     x.map(dot_product(_, w).sign)
   }
 
-  def get_support_vectors(w: Vector[Double], x:Vector[Vector[Double]]):Vector[Vector[Double]] =
-    x.map(x_i => dot_product(x_i, w) match {
+  def get_support_vectors(w: Vector[Double]= weights):Vector[Vector[Double]] =
+    /*this.x.map(x_i => dot_product(x_i, w) match {
       case 1 => x_i
       case -1 => x_i
-    })
+    })*/
+    val support = this.x_bias.dropWhile(x_i=>{dot_product(x_i, w) != 1.0 || dot_product(x_i, w) != -1.0})
+    support
 
   // get hypothesis function
   def get_hypothesis(): Vector[Double] => Double = {

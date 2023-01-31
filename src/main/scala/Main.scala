@@ -17,7 +17,7 @@ import scala.util.Using
     /*
      * Loading Spark and Hadoop.
      */
-    val sparkSession = SparkProjectConfig.sparkSession("local[*]", 1)
+    /*val sparkSession = SparkProjectConfig.sparkSession("local[*]", 1)
     val sparkContext = sparkSession.sparkContext
 
     val data = MLUtils.loadLibSVMFile(sparkContext, "data/weatherAUSlibsvm.txt")
@@ -46,7 +46,7 @@ import scala.util.Using
     val auROC = metrics.areaUnderROC()
     println(s"Area under ROC = $auROC")
 
-    sparkSession.stop()
+    sparkSession.stop()*/
 
     // initialize global support vector
     val global_support_vector : Vector[Vector[Double]] = Vector.empty
@@ -55,12 +55,19 @@ import scala.util.Using
     }*/
 
     // load data
-    val data_csv = ReadCSV("data/weatherAUSfinal.csv")
+    val (data_csv,target_csv) = ReadCSV("data/weatherAUSfinal.csv")
 
+    println(data_csv)
     // divide data into chunks
-    val num_maps = 40
+    /*val num_maps = 40
     val chunkSize = data_csv.size / num_maps
-    val chunks = data_csv.grouped(chunkSize).toVector
+    val chunks = data_csv.grouped(chunkSize).toVector*/
+    val svm= new BinarySVM(data_csv,target_csv)
+
+    //println(svm.weights)
+    svm.fit()
+    println(svm.weights)
+    println(svm.get_support_vectors())
 
     // while hyp t =! hyp t-1
 
