@@ -56,18 +56,23 @@ import scala.util.Using
 
     // load data
     val (data_csv,target_csv) = ReadCSV("data/weatherAUSfinal.csv")
-
-    println(data_csv)
+    val target_svm = target_csv.map {
+        case 0.0 => -1.0
+        case 1.0 => 1.0
+    }
+    //println(data_csv)
     // divide data into chunks
     /*val num_maps = 40
     val chunkSize = data_csv.size / num_maps
     val chunks = data_csv.grouped(chunkSize).toVector*/
-    val svm= new BinarySVM(data_csv,target_csv)
+    val svm= new BinarySVM(data_csv,target_svm)
 
     //println(svm.weights)
     svm.fit()
     println(svm.weights)
-    println(svm.get_support_vectors())
+    //print_graph()
+    println("Classification accuracy:" + (svm.predict(svm.x_bias), target_svm).zipped.count(i => i._1 == i._2).toDouble / svm.x_bias.length)
+    //println(svm.get_support_vectors())
 
     // while hyp t =! hyp t-1
 
