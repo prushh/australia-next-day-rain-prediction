@@ -10,10 +10,10 @@ import utils._
 object Main {
     def main(args: Array[String]): Unit = {
         // load data
-        val (df, labels) = readCSVIris("./data/iris.csv")
+        val (df, labels) = ReadCSV("data/weatherAUSfinal.csv")
 
         // initialize new SVM object
-        val svm = new BinarySVM(df, labels)
+        val svm = new BinarySVM(df.take(1000), labels.take(1000))
         // train svm
         svm.fit()
 

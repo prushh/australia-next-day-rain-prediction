@@ -14,7 +14,7 @@ object dotProduct {
  * @param eta Learning rate
  * @param epochs No. of training epochs
  */
-class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=1, epochs: Int=10000) {
+class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=1, epochs: Int=100) {
 
   // Add a bias term to the data.
   def prepare(x: DataFrame[Double]): DataFrame[Double] = x.map(_ :+ 1.0)
