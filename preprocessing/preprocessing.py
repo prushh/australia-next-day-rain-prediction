@@ -46,16 +46,16 @@ def main():
              .drop(columns=many_missing_cols)
              .dropna(subset=([target_col]))
              .fillna(to_fill_values))
+
     if args.balancing:
         print('Balancing...')
-        print(final[target_col].shape)
         columns = final.columns
         y = final[target_col].to_numpy().astype('int32')
         X = final.iloc[:, final.columns != target_col]
-        #TODO: review type of balancing
+        # TODO: review type of balancing
         under_sampler = RandomUnderSampler(random_state=42)
         X_res, y_res = under_sampler.fit_resample(X, y)
-        y_res=y_res.reshape(-1,1)
+        y_res = y_res.reshape(-1, 1)
         interim = np.concatenate((X_res, y_res), axis=1)
         final = pd.DataFrame(data=interim, columns=columns)
 
