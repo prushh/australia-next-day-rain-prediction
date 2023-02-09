@@ -14,4 +14,4 @@ lazy val root = (project in file("."))
           ("org.apache.spark" %% "spark-mllib" % sparkVersion).cross(CrossVersion.for3Use2_13),
           "com.github.nscala-time" %% "nscala-time" % "2.32.0"
       )
-  )
+)
