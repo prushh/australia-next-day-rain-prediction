@@ -1,5 +1,6 @@
 package it.unibo.andrp
 
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
 import it.unibo.andrp.global.DataFrame
 
 import scala.annotation.tailrec
@@ -14,7 +15,7 @@ object dotProduct {
  * @param eta Learning rate
  * @param epochs No. of training epochs
  */
-class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=1, epochs: Int=100) {
+class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=0.01, epochs: Int=1000) {
 
   // Add a bias term to the data.
   def prepare(x: DataFrame[Double]): DataFrame[Double] = x.map(_ :+ 1.0)
@@ -60,4 +61,16 @@ class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=1, epochs
   }
 
   def classification(x: Vector[Vector[Double]], w: Vector[Double] = w): Vector[Int] = x.map(dotProduct(_, w).signum)
+
+  def get_support_vectors(w: Vector[Double]= w, tol: Double=0.05):Vector[Double] =
+
+    val support = this.df.filter(
+      x_i=>{
+        val dot_prod = dotProduct(x_i, w)
+        val cond_supp_1 = dot_prod >= 1-tol && dot_prod <= 1+tol
+        val cond_supp_2 = dot_prod <= -1+tol && dot_prod >= -1-tol
+        cond_supp_1 || cond_supp_2
+      }).map(x_f=>dotProduct(x_f, w))
+    support
+
 }
