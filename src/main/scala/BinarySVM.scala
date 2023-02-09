@@ -1,104 +1,76 @@
 package it.unibo.andrp
 
+import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label
+import it.unibo.andrp.global.DataFrame
+
 import scala.annotation.tailrec
 
+
+object dotProduct {
+  def apply(x: Vector[Double], w: Vector[Double]): Double = (x, w).zipped.map((a, b) => a * b).sum
+}
 /**
- * @param x feature vector,
- * @param y target vector,
+ * @param x Feature data.
+ * @param labels Binary labels
+ * @param eta Learning rate
+ * @param epochs No. of training epochs
  */
-// eta: Double=1, it_num: Int = 10000  param eta learning rate, param it_num iteration number
-class BinarySVM(x: Vector[Vector[Double]], y:Vector[Double], epochs: Int = 100, eta: Double = 0.001) {
+class BinarySVM(x: DataFrame[Double], labels: Vector[Int], eta: Double=0.01, epochs: Int=1000) {
 
-  // adding the bias to the x vector
-  def add_bias(x: Vector[Vector[Double]]): Vector[Vector[Double]] = x.map(_ :+ -1.0)
+  // Add a bias term to the data.
+  def prepare(x: DataFrame[Double]): DataFrame[Double] = x.map(_ :+ 1.0)
 
-  val x_bias: Vector[Vector[Double]] = add_bias(x)
-  var weights: Vector[Double] = (for (_ <- 1 to x_bias(0).length) yield 0.0).toVector
+  // Prepared data.
+  val df: DataFrame[Double] = prepare(x)
 
-  // dot product
-  def dot_product(x: Vector[Double], w: Vector[Double]): Double = {
-    x.lazyZip(w).map((a, b) => a * b).sum
-  }
 
-  // fit
+  // Weights initialization.
+  var w :Vector[Double] = (for (_ <- 1 to df(0).length) yield 0.0).toVector
+
+
   def fit(): Unit = {
-    def reg_gradient(w: Vector[Double], x_i: Vector[Double], y_i: Double, epoch: Int): Vector[Double] = {
-      // w = w + eta * ( (X[i] * Y[i]) + (-2  *(1/epoch)* w) )
-      //self.w -= self.lr * (2 * self.lambda_param * self.w - np.dot(x_i, y_[idx]))
-      //self.b -= self.lr * y_[idx]
-      w.zip(x_i).map((w_, x_i_) => (w_, x_i_) match{
-        case (_,-1.0)=>
-          w_ - eta * y_i
-        case (_,_) =>w_ - eta * ((2 * (1 / epoch) * w_) - (x_i_ * y_i) )}
-      )
-
+    // Will only be called if classification is wrong.
+    def gradient(w: Vector[Double], data: Vector[Double], label: Int, epoch: Int): Vector[Double] = {
+      (w, data).zipped.map((w, d) => w + eta * ((d * label) + (-2 * (1 / epoch) * w)))
     }
 
-    def gradient(w: Vector[Double], epoch: Int): Vector[Double] = {
-      // w = w + eta * (-2  *(1/epoch)* w)
-      //self.w -= self.lr * (2 * self.lambda_param * self.w)
-      w.map(w_i => w_i + eta * (-2 * (1 / epoch) * w_i))
+    def regularizationGradient(w: Vector[Double], label: Int, epoch: Int): Vector[Double] = {
+      w.map(i => i + eta * (-2  * (1 / epoch) * i))
     }
 
-    @tailrec
-    def iteration(w: Vector[Double], x: Vector[Vector[Double]], y: Vector[Double], epoch: Int) : Vector[Double] = (x, y) match {
-      // miss-classification condition: (Y[i]*np.dot(X[i], w)) < 1
-      // y_[idx] * (np.dot(x_i, self.w) - self.b) >= 1
-      case (xh +: xs, yh +: ys) if (yh * (dot_product(xh, w))) < 1 =>
-        iteration(reg_gradient(w, xh, yh, epoch), xs, ys, epoch)
-      case (_ +: xs, _ +: ys) =>
-        iteration(gradient(w, epoch), xs, ys, epoch)
+    // Misclassification treshold.
+    def misClassification(x: Vector[Double], w: Vector[Double], label: Int): Boolean = {
+      dotProduct(x, w) * label < 1
+    }
+
+    def trainOneEpoch(w: Vector[Double], x: DataFrame[Double], labels: Vector[Int], epoch: Int): Vector[Double] = (x, labels) match {
+      // If classification is wrong. Update weights with loss gradient
+      case (xh +: xs, lh +: ls) if misClassification(xh, w, lh) => trainOneEpoch(gradient(w, xh, lh, epoch), xs, ls, epoch)
+      // If classification is correct: update weights with regularizer gradient
+      case (_ +: xs, lh +: ls) => trainOneEpoch(regularizationGradient(w, lh, epoch), xs, ls, epoch)
       case _ => w
     }
 
-    @tailrec
-    def train(w: Vector[Double], epochs: Int, t: Int = 1): Vector[Double] = epochs match {
+    def trainEpochs(w: Vector[Double], epochs: Int, epochCount: Int = 1): Vector[Double] = epochs match {
       case 0 => w
-      case _ => train(iteration(w, x_bias, y, t), epochs - 1, t + 1)
+      case _ => trainEpochs(trainOneEpoch(w, df, labels, epochCount), epochs - 1, epochCount + 1)
     }
 
-    // update weight
-
-    weights = train(weights, epochs)
-
+    // Update weights
+    w = trainEpochs(w, epochs)
   }
 
-  // functions to call after fitting
+  def classification(x: Vector[Vector[Double]], w: Vector[Double] = w): Vector[Int] = x.map(dotProduct(_, w).signum)
 
-  def predict(x: Vector[Vector[Double]], w: Vector[Double] = weights): Vector[Double] = {
-    // y = sign(x.w + b)
-    x.map(dot_product(_, w).sign)
-  }
+  def get_support_vectors(w: Vector[Double]= w, tol: Double=0.05):Vector[Double] =
 
-  def get_support_vectors(w: Vector[Double]= weights):Unit =
-    /*this.x.map(x_i => dot_product(x_i, w) match {
-      case 1 => x_i
-      case -1 => x_i
-    })*/
-    //val support = this.x_bias.dropWhile(x_i=>{dot_product(x_i, w) <= 0.95 || dot_product(x_i, w) >= 1.05 || dot_product(x_i, w) >= -0.95 || dot_product(x_i, w) <= -1.05})
-    //support
-    println(this.x_bias.map(dot_product(_,w)))
+    val support = this.df.filter(
+      x_i=>{
+        val dot_prod = dotProduct(x_i, w)
+        val cond_supp_1 = dot_prod >= 1-tol && dot_prod <= 1+tol
+        val cond_supp_2 = dot_prod <= -1+tol && dot_prod >= -1-tol
+        cond_supp_1 || cond_supp_2
+      }).map(x_f=>dotProduct(x_f, w))
+    support
 
-  // get hypothesis function
-  def get_hypothesis(): Vector[Double] => Double = {
-    (x: Vector[Double]) => dot_product(x, weights)
-  }
-  /*def print_graph(): Unit={
-    val f = Figure()
-    val p = f.subplot(0)
-    p.title = "Decision boundary SVM"
-    p.xlabel = "x1"
-    p.ylabel = "x2"
-
-    val x1 = (svm.x_bias, y).zipped.filter((_, b) => b == -1)._1
-    val x2 = (svm.x_bias, y).zipped.filter((_, b) => b == 1)._1
-
-    p += plot(x1.map(_(0)), x1.map(_(1)), '.', "b")
-    p += plot(x2.map(_(0)), x2.map(_(1)), '.', "r")
-
-    val sorted_x = x.sortWith((i1, i2) => i1(0) > i2(0))
-    val w_ = weights.patch(1, Vector(0.0), 1)
-    p += plot(sorted_x.map(_(0)), sorted_x.map(x => -dotProduct(x, w_) /  weights(1)))
-    f.saveas("fig.png")
-  }*/
 }
