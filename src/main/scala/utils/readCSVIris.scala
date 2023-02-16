@@ -1,9 +1,6 @@
 package it.unibo.andrp
 package utils
 
-import global.DataFrame
-
-
 object readCSVIris {
   /**
    * Reads the iris dataset and return the 'setosa' and 'versicolor' class and takes the first two feature columns.
@@ -11,7 +8,7 @@ object readCSVIris {
    * @param path Path of the iris.csv file
    * @return a dataframe containing the features and the labels.
    */
-  def apply(path: String): (DataFrame[Double], Vector[Int]) = {
+  def apply(path: String): (Array[Array[Double]], Array[Double]) = {
     val bufferedSource = scala.io.Source.fromFile(path)
 
     // rename the setosa and versicolor class to -1 and 1
@@ -27,10 +24,10 @@ object readCSVIris {
 
     // split lines and map the flowerClass function discarding the virginica flower.
     val rows = lines.map(_.split(",").map(flowerClass)).filter(i => i.last < 2)
-    val labels = rows.map(_.last.toInt)
-    val data = rows.map(_.init)
+    val labels = rows.map(_.last)
+    val data = rows.toArray.map(_.init)
     bufferedSource.close()
 
-    (data.map(i => Vector(i(0), i(1))), labels)
+    (data.map(i => Array(i(0), i(1))), labels.toArray)
   }
 }
