@@ -1,5 +1,10 @@
 package it.unibo.andrp
 import scala.util.Random
+
+
+
+
+
 import utils.{ReadCSV, readCSVIris}
 
 package object global {
@@ -21,8 +26,8 @@ object Main {
 
         val clf = SoftSVM()
         val alpha = clf.train_soft_margin(x_train, y_train, 0.0001, 1.0, 10000)
-        println(clf.accuracy(x_train, y_train, alpha, 0.001, x_test, y_test))
-
+        println(clf.accuracy(x_train, y_train, alpha, 0.0001, x_test, y_test))
+        plotDataAndSupportVectors(trainData,alpha)
         // initialize new SVM object
 //        val svm = new BinarySVM(df, labels)
 //        // train svm
@@ -37,6 +42,41 @@ object Main {
         //Plotter(svm.df, labels, svm.w)
 
     }
+
+  import breeze.linalg._
+  import breeze.plot._
+  import java.awt.{Color, Paint}
+
+
+  def plotDataAndSupportVectors(data: Array[(Array[Double], Double)], alphas: Array[Double]): Unit = {
+
+    // filter support vectors
+    val svIndices = alphas.indices.filter(i => alphas(i) > 1e-12)
+    val sv = svIndices.map(data(_)).toArray
+
+    // create plot
+    val f = Figure()
+    val p = f.subplot(0)
+
+    // plot data points
+    val xs = data.map(_._1(0))
+    val ys = data.map(_._1(1))
+    val labels = data.map(_._2)
+    // plot data points
+    val markers = data.map(p => if (p._2 == 1.0) '+' else 'o')
+    val colors = data.map(p => if (p._2 == 1.0) Color.blue else Color.red)
+    p += scatter(xs, ys, colors = (i => colors(i)), size = (i => 0.01))
+
+    // plot support vectors
+    val svxs = sv.map(_._1(0))
+    val svys = sv.map(_._1(1))
+    p += scatter(svxs, svys, colors=(i => Color.yellow), size= (i => 0.2))
+
+    // show plot
+    f.refresh()
+  }
+
+
 }
 
 

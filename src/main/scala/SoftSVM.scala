@@ -22,7 +22,7 @@ class SoftSVM {
         for {
             i <- 0 until n
             j <- 0 until n
-        } K(i)(j) = rbf_kernel(X(i), X(j), gamma)
+        } K(i)(j) = linearKernel(X(i), X(j))
 
         while (passes < max_passes) {
             var num_changed_alphas = 0
@@ -75,6 +75,8 @@ class SoftSVM {
         exp(-gamma * dist)
     }
 
+    def linearKernel(x: Array[Double], z: Array[Double]): Double = {    x.zip(z).map { case (xi, zi) => xi * zi }.sum}
+
     def margin_error(X: Array[Array[Double]], y: Array[Double], K: Array[Array[Double]], alpha: Array[Double], i: Int): Double = {
         val wx = (for {
             j <- X.indices
@@ -111,7 +113,7 @@ class SoftSVM {
     def predict(X: Array[Array[Double]], y: Array[Double], alpha: Array[Double], gamma: Double, x: Array[Double]): Double = {
         val wx = (for {
             i <- X.indices
-        } yield alpha(i) * y(i) * rbf_kernel(X(i), x, gamma)).sum
+        } yield alpha(i) * y(i) * linearKernel(X(i), x)).sum
         if (wx > 0) 1.0 else -1.0
     }
 
