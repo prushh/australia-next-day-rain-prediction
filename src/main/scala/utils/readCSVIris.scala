@@ -31,6 +31,6 @@ object readCSVIris {
     val data = rows.map(_.init)
     bufferedSource.close()
 
-    (data.map(i => Vector(i(0), i(1))), labels)
+    (data.map(i => Vector(i(0), i(1), i(2), i(3))), labels)
   }
 }
