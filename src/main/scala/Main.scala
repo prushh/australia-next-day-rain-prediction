@@ -45,6 +45,44 @@ object Main {
      //Evaluate the accuracy of the predictions
     val accuracy = calculateAccuracy(predictions, test_data.map(_.label))
     println(s"Accuracy forest: $accuracy")
+
+    //MAP REDUCE
+
+
+
+    val sc = new SparkContext("local[*]", "Random Forest")
+
+    // Parametri dell'algoritmo
+    val numTrees = 5
+    val maxDepth = 10
+    val minSplitSize = 2
+
+    // Caricamento del dataset e creazione di RDD
+    val data_mapred = sc.textFile("data/weatherAUS-final.csv").map(line => {
+      val split = line.split(",")
+      val features = split.dropRight(1).map(_.toDouble).toList
+      val label = split.last.toInt
+      DataPoint(features, label)
+    }).cache()
+
+    // Creazione degli alberi
+    val trees = (1 to numTrees).map { _ =>
+      val sample = data_mapred.sample(true, 1.0)
+      val tree = new DecisionTree(maxDepth = 3, numFeatures = numFeatures)
+      tree.train(sample.collect().toList,subFeatures)
+      tree
+    }
+
+    // Funzione di predizione
+    def predict(point: DataPoint): Int = {
+      val predictions = trees.map(tree => tree.predict(point, tree.root))
+      predictions.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
+    }
+
+    // Esempio di utilizzo della funzione di predizione
+    val testPoint = DataPoint(Vector(5.1, 3.5, 1.4, 0.2), -1)
+    val prediction = predict(testPoint)
+    println(s"Prediction for test point ${testPoint.features}: $prediction")
   }
 
 
@@ -69,40 +107,8 @@ object Main {
 
 
 
-  /*val sc = new SparkContext("local[*]", "Random Forest")
 
-  // Parametri dell'algoritmo
-  val numTrees = 5
-  val maxDepth = 10
-  val minSplitSize = 2
 
-  // Caricamento del dataset e creazione di RDD
-  val data = sc.textFile("data/weatherAUS-final.csv").map(line => {
-      val split = line.split(",")
-      val features = split.dropRight(1).map(_.toDouble).toVector
-      val label = split.last.toInt
-      DataPoint(features, label)
-  }).cache()
-
-  // Creazione degli alberi
-  val trees = (1 to numTrees).map { _ =>
-      val sample = data.sample(true, 1.0)
-      val tree = new DecisionTree()
-      tree.buildTree(sample.collect(), maxDepth, minSplitSize)
-      tree
-  }
-
-  // Funzione di predizione
-  def predict(point: DataPoint): Int = {
-      val predictions = trees.map(tree => tree.predict(point, tree.root))
-      predictions.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
-  }
-
-  // Esempio di utilizzo della funzione di predizione
-  val testPoint = DataPoint(Vector(5.1, 3.5, 1.4, 0.2), -1)
-  val prediction = predict(testPoint)
-  println(s"Prediction for test point ${testPoint.features}: $prediction")
-*/
 }
 
 
