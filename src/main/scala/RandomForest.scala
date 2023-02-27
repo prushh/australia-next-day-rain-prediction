@@ -17,7 +17,7 @@ class RandomForest(numTrees: Int, maxDepth: Int, numFeatures: Int) {
     trees.foreach(tree => {
       val subTreeFeatures = Random.shuffle(subFeatures).take(Math.sqrt(numFeatures).toInt)
       val subData = selectDataWithReplacement(data)
-      tree.train(subData, subTreeFeatures)
+      tree.train(data, subTreeFeatures)
     })
   }
 

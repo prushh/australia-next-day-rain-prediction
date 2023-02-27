@@ -15,23 +15,23 @@ import utils._
 object Main {
   def main(args: Array[String]): Unit = {
     // load data
-    val (df, labels) = readCSVIris("data/iris.csv")
-    //val (df, labels) = ReadCSV("data/weatherAUS-final.csv")
+    //val (df, labels) = readCSVIris("data/iris.csv")
+    val (df, labels) = ReadCSV("data/weatherAUS-final.csv")
 
     val data = df zip labels
-    val dfDatapoint = Random.shuffle((data.map(x => DataPoint(x._1.toList,x._2))).toList)
+    val dfDatapoint = Random.shuffle((data.map(x => DataPoint(x._1.toList,x._2))).toList).take(5000)
     val (train_data,test_data) = splitData(dfDatapoint,0.9)
     // Load data from file
     //val data = loadIrisData("iris.csv")
 
     // Split data into training and testing sets
     //val (trainData, testData) = splitData(data, 0.7)
-    val numFeatures=4
+    val numFeatures=32
     // Create a new random forest with 10 trees, maximum depth of 5, and 2 features per tree
-    val forest = new RandomForest(numTrees = 10, maxDepth = 1, numFeatures = numFeatures)
-    //forest.train(train_data)
+    val forest = new RandomForest(numTrees = 3, maxDepth = 1, numFeatures = numFeatures)
+    forest.train(train_data)
 
-    val tree = new DecisionTree(maxDepth = 2, numFeatures = numFeatures)
+    val tree = new DecisionTree(maxDepth = 4, numFeatures = numFeatures)
     val subFeatures = List.range(0, numFeatures)
     // Train the random forest on the training data
     tree.train(train_data,subFeatures)
@@ -40,11 +40,11 @@ object Main {
     println(s"Accuracy: $acc")
 
      //Make predictions on the testing data
-    //val predictions = test_data.map(forest.predict)
+    val predictions = test_data.map(forest.predict)
 
      //Evaluate the accuracy of the predictions
-    //val accuracy = calculateAccuracy(predictions, test_data.map(_.label))
-    //println(s"Accuracy forest: $accuracy")
+    val accuracy = calculateAccuracy(predictions, test_data.map(_.label))
+    println(s"Accuracy forest: $accuracy")
   }
 
 

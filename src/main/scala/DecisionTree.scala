@@ -26,22 +26,23 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
     if (depth >= maxDepth || data.isEmpty || isHomogeneous(data) || features.size == 0) {
       Leaf(getMajorityClass(data))
     } else {
-      val (left, right, feature) = splitData(data)
+      val (left, right, feature, threeshold) = splitData(data)
       if (left.isEmpty || right.isEmpty) {
         Leaf(getMajorityClass(data))
       } else {
 
-        InternalNode(feature, splitThreshold(data, feature), buildTree(left, depth + 1), buildTree(right, depth + 1))
+        InternalNode(feature, threeshold, buildTree(left, depth + 1), buildTree(right, depth + 1))
       }
     }
   }
 
   private def selectFeature(data: List[DataPoint]): Int = {
-    val index = taken.maxBy(informationGain(data, _))
+    val max_taken_impurity_feature = taken.maxBy(informationGain(data, _))
     //val index = Random.nextInt(taken.length)
-    val feature = taken(index)
-    taken = taken.take(index) ++ taken.drop(index + 1)
-    feature
+    val index_taken = features.indexOf(max_taken_impurity_feature)
+    val feature = taken(index_taken)
+    taken = taken.take(index_taken) ++ taken.drop(index_taken + 1)
+    index_taken
   }
 
   private def isHomogeneous(data: List[DataPoint]): Boolean =
@@ -50,7 +51,7 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
   private def getMajorityClass(data: List[DataPoint]): Int =
     data.groupBy(_.label).mapValues(_.size).maxBy(_._2)._1
 
-  private def splitData(data: List[DataPoint]): (List[DataPoint], List[DataPoint], Int) = {
+  private def splitData(data: List[DataPoint]): (List[DataPoint], List[DataPoint], Int, Double) = {
 
     /*val remainingFeatures = features.filterNot(_ == bestFeature)
     val featureValues = data.map(_.features(bestFeature)).distinct
@@ -60,15 +61,33 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
       (value, childNode)
     }*/
 
-    val feature = selectFeature(data)
-    val threshold = splitThreshold(data, feature)
-    val (left, right) = data.partition(_.features(feature) <= threshold)
-    (left, right, feature)
+    val index_feature = selectFeature(data)
+    val threshold = findBestThreshold(data, features(index_feature), impurity)
+    val (left, right) = data.partition(_.features(index_feature) <= threshold)
+    (left, right, features(index_feature), threshold)
   }
 
   private def splitThreshold(data: List[DataPoint], feature: Int): Double = {
     val featureValues = data.map(_.features(feature))
     (featureValues.min + featureValues.max) / 2.0
+  }
+
+  def findBestThreshold(data: List[DataPoint], featureIndex: Int, impurityFunc: List[Int] => Double): Double = {
+    val sortedData = data.sortBy(_.features(featureIndex))
+    var bestThreshold = 0.0
+    var bestGain = 0.0
+    for (i <- 1 until sortedData.length) {
+      if (sortedData(i - 1).features(featureIndex) != sortedData(i).features(featureIndex)) {
+        val threshold = (sortedData(i - 1).features(featureIndex) + sortedData(i).features(featureIndex)) / 2.0
+        val (left, right) = sortedData.splitAt(i)
+        val gain = impurityFunc(left.map(_.label)) * left.length / data.length + impurityFunc(right.map(_.label)) * right.length / data.length
+        if (gain > bestGain) {
+          bestGain = gain
+          bestThreshold = threshold
+        }
+      }
+    }
+    bestThreshold
   }
 
   def accuracy(dataset: List[DataPoint]): Double = {
