@@ -19,7 +19,7 @@ object Main {
     val (df, labels) = ReadCSV("data/weatherAUS-final.csv")
 
     val data = df zip labels
-    val dfDatapoint = Random.shuffle((data.map(x => DataPoint(x._1.toList,x._2))).toList).take(5000)
+    val dfDatapoint = Random.shuffle((data.map(x => DataPoint(x._1.toList,x._2))).toList).take(1000)
     val (train_data,test_data) = splitData(dfDatapoint,0.9)
     // Load data from file
     //val data = loadIrisData("iris.csv")
@@ -46,10 +46,9 @@ object Main {
     val accuracy = calculateAccuracy(predictions, test_data.map(_.label))
     println(s"Accuracy forest: $accuracy")
 
+
+
     //MAP REDUCE
-
-
-
     val sc = new SparkContext("local[*]", "Random Forest")
 
     // Parametri dell'algoritmo
@@ -58,12 +57,16 @@ object Main {
     val minSplitSize = 2
 
     // Caricamento del dataset e creazione di RDD
-    val data_mapred = sc.textFile("data/weatherAUS-final.csv").map(line => {
+    //val data_mapred = sc.textFile("data/weatherAUS-final.csv")
+
+    /*val data_nohead = sc.parallelize(data_mapred.collect().drop(1)).map(line => {
       val split = line.split(",")
       val features = split.dropRight(1).map(_.toDouble).toList
       val label = split.last.toInt
       DataPoint(features, label)
-    }).cache()
+    }).cache()*/
+
+    val data_mapred = sc.parallelize(train_data)
 
     // Creazione degli alberi
     val trees = (1 to numTrees).map { _ =>
@@ -75,17 +78,18 @@ object Main {
 
     // Funzione di predizione
     def predict(point: DataPoint): Int = {
-      val predictions = trees.map(tree => tree.predict(point, tree.root))
+      val predictions = trees.map(tree => tree.predict(point))
       predictions.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
     }
 
-    // Esempio di utilizzo della funzione di predizione
-    val testPoint = DataPoint(Vector(5.1, 3.5, 1.4, 0.2), -1)
-    val prediction = predict(testPoint)
-    println(s"Prediction for test point ${testPoint.features}: $prediction")
+    //Make predictions on the testing data
+    val predictions_map = test_data.map(predict)
+
+    //Evaluate the accuracy of the predictions
+    val accuracy_map = calculateAccuracy(predictions_map, test_data.map(_.label))
+    println(s"Accuracy map reduce decision tree: $accuracy_map")
+
   }
-
-
 
   // Utility function to split data into training and testing sets
   def splitData(data: List[DataPoint], trainFraction: Double): (List[DataPoint], List[DataPoint]) = {
