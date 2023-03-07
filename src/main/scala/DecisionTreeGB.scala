@@ -2,7 +2,7 @@ package it.unibo.andrp
 
 import scala.collection.mutable.ArrayBuffer
 
-class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
+class DecisionTreeGB(val maxDepth: Int,  minSplitSize: Int) {
 
   private var root: Option[Node] = None
   private var features: List[Int] = Nil
@@ -15,7 +15,7 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
       case Some(x) => x
       case None => List.fill(data.size)(1.0)
     }
-    root = Some(buildDecisionTree(data, w, impurity, 3, 10))
+    root = Some(buildDecisionTree(data, w, impurity, maxDepth, minSplitSize, numFeatures))
   }
 
   def predict(dataPoint: DataPoint): Int = {
@@ -34,7 +34,7 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
                         minSplitSize: Int
                        ): Node = {
     val labels = data.map(_.label.toInt)
-    if (maxDepth == 0 || labels.size < minSplitSize) {
+    if (maxDepth == 0 || labels.size < minSplitSize ) {
       Leaf(getMajorityWeighted(labels, weights))
     } else {
       val (bestFeature, bestGain, bestSplits) = findBestFeature(data, weights, impurityFunc)
@@ -42,8 +42,8 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
         Leaf(getMajorityWeighted(labels, weights))
       } else {
         val (leftData, leftWeights, rightData, rightWeights) = splitData(data, weights, bestFeature, bestSplits)
-        val leftChild = buildDecisionTree(leftData, leftWeights, impurityFunc, maxDepth - 1, minSplitSize)
-        val rightChild = buildDecisionTree(rightData, rightWeights, impurityFunc, maxDepth - 1, minSplitSize)
+        val leftChild = buildDecisionTree(leftData, leftWeights, impurityFunc, maxDepth - 1, minSplitSize, numFeature - 1)
+        val rightChild = buildDecisionTree(rightData, rightWeights, impurityFunc, maxDepth - 1, minSplitSize, numFeature - 1)
         InternalNode(bestFeature, bestSplits, leftChild, rightChild)
       }
     }
@@ -93,59 +93,15 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
     }
   }
 
-  private def selectFeature(data: List[DataPoint]): Int = {
-    val max_taken_impurity_feature = taken.maxBy(informationGain(data, _))
-    //val index = Random.nextInt(taken.length)
-    val index_taken = features.indexOf(max_taken_impurity_feature)
-    val feature = taken(index_taken)
-    taken = taken.take(index_taken) ++ taken.drop(index_taken + 1)
-    index_taken
-  }
 
-  private def isHomogeneous(data: List[DataPoint]): Boolean =
-    data.map(_.label).distinct.length <= 1
 
-  private def getMajorityClass(data: List[DataPoint]): Int =
-    data.groupBy(_.label).mapValues(_.size).maxBy(_._2)._1
 
-  private def splitData(data: List[DataPoint]): (List[DataPoint], List[DataPoint], Int, Double) = {
 
-    /*val remainingFeatures = features.filterNot(_ == bestFeature)
-    val featureValues = data.map(_.features(bestFeature)).distinct
-    val children = featureValues.map { value =>
-      val subset = data.filter(dp => dp.features(bestFeature) == value)
-      val childNode = buildTree(subset, depth - 1, remainingFeatures)
-      (value, childNode)
-    }*/
-    val (bestFeature, bestGain, bestSplits) = findBestFeature(data, Seq(1.0,1.2), weightedImpurity)
-    /*val index_feature = selectFeature(data)
-    val threshold = findBestThreshold(data, features(index_feature), impurity)*/
-    val (left, right) = data.partition(_.features(bestFeature) <= bestSplits)
-    (left, right, bestFeature, bestSplits)
-  }
 
-  def findBestThreshold(data: List[DataPoint], featureIndex: Int, impurityFunc: List[Int] => Double): Double = {
-    val sortedData = data.sortBy(_.features(featureIndex))
-    var bestThreshold = 0.0
-    var bestGain = 0.0
-    for (i <- 1 until sortedData.length) {
-      if (sortedData(i - 1).features(featureIndex) != sortedData(i).features(featureIndex)) {
-        val threshold = (sortedData(i - 1).features(featureIndex) + sortedData(i).features(featureIndex)) / 2.0
-        val (left, right) = sortedData.splitAt(i)
-        val gain = impurityFunc(left.map(_.label)) * left.length / data.length + impurityFunc(right.map(_.label)) * right.length / data.length
-        if (gain > bestGain) {
-          bestGain = gain
-          bestThreshold = threshold
-        }
-      }
-    }
-    bestThreshold
-  }
 
-  private def splitThreshold(data: List[DataPoint], feature: Int): Double = {
-    val featureValues = data.map(_.features(feature))
-    (featureValues.min + featureValues.max) / 2.0
-  }
+
+
+
 
   def findBestFeature(
 
@@ -162,7 +118,7 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
     for (feature <- 0 until numFeatures) {
       val values = data.map(_.features(feature))
 
-      val (gain, splits)  = findBestWeightedSplit(values, labels, weights, impurityFunc)
+      val (splits, gain) = findBestWeightedSplit(values, labels, weights, impurityFunc)
 
       if (gain > bestGain) {
         bestFeature = feature
@@ -187,7 +143,7 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
     var leftCount = 0.0
     var rightWeight = totalWeight
     var rightCount = labels.length.toDouble
-    var bestSplit=Double.MinValue
+    var bestSplit = Double.MinValue
     var bestGain = Double.MinValue
 
     for (((value, label), weight) <- data.dropRight(1)) {
@@ -208,49 +164,34 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
         }
       }
     }
-    (bestSplit,bestGain)
+    (bestSplit, bestGain)
   }
 
 
-  def findBestWeightedSplit2(
-                              featureValues: Seq[Double],
-                              labels: Seq[Int],
-                              weights: Seq[Double],
-                              impurityFunc: (Seq[Int], Seq[Double]) => Double): (Double, Double) =  {
-
-    // Ordina i valori della feature in ordine crescente
-    val sortedValues = featureValues.zip(labels).zip(weights).sortBy(_._1._1)
-
-    // Calcola i pesi cumulativi per le due classi
-    val totalWeight = weights.sum
-    var class0Weight = 0.0
-    var class1Weight = weights.sum
-    val cumulativeWeights = sortedValues.map { case ((value, label), weight) =>
-      if (label == 0.0) {
-        class0Weight += weight
-      } else {
-        class1Weight -= weight
-      }
-      (value, class0Weight, class1Weight)
-    }
-
-    // Trova il threshold ottimale utilizzando la ricerca binaria
+  def findBestWeightedSplit2(values: Seq[Double], labels: Seq[Int], weights: Seq[Double], impurityFunc: (Seq[Int], Seq[Double]) => Double): (Double, Double) = {
+    val sortedData = values.zip(labels).zip(weights).sortBy(_._1._1)
+    val weightsSum = weights.sum
+    var leftWeightSum = 0.0
+    var leftLabelSum = 0.0
     var bestGain = Double.NegativeInfinity
-    var bestSplits = Seq.empty[(Double, Double, Double)]
-    for (i <- 0 until cumulativeWeights.length - 1) {
-      val (value1, class0Weight1, class1Weight1) = cumulativeWeights(i)
-      val (value2, class0Weight2, class1Weight2) = cumulativeWeights(i + 1)
-      val threshold = (value1 + value2) / 2.0
-      val gain = impurityFunc(Seq(class0Weight1, class1Weight1), Seq(class0Weight2, class1Weight2))
-      if (gain > bestGain) {
-        bestGain = gain
-        bestSplits = threshold
+    var bestThreshold = Double.NaN
+
+    // Ricerca binaria del threshold
+    for (i <- 0 until values.size - 1) {
+      val currentWeight = sortedData(i)._2
+      leftWeightSum += currentWeight
+      leftLabelSum += sortedData(i)._1._2 * currentWeight
+      val rightWeightSum = weightsSum - leftWeightSum
+      val rightLabelSum = sortedData.map(x => x._1._2 * x._2).sum - leftLabelSum
+      val impurity = impurityFunc(Seq(leftLabelSum.toInt, rightLabelSum.toInt), Seq(leftWeightSum, rightWeightSum))
+      if (impurity > bestGain) {
+        bestGain = impurity
+        bestThreshold = (sortedData(i)._1._1 + sortedData(i + 1)._1._1) / 2.0
       }
     }
 
-    (bestGain, bestSplits)
+    (bestThreshold, bestGain)
   }
-
 
 
   def accuracy(dataset: List[DataPoint]): Double = {
@@ -297,23 +238,7 @@ class DecisionTreeGB(val maxDepth: Int, val numFeatures: Int) {
     printTree(this.root.get)
   }
 
-  def impurity(labels: Seq[Int],w:Seq[Double]): Double = {
-    val counts = labels.groupBy(identity).mapValues(_.size)
-    val proportions = counts.values.map(_.toDouble / labels.size)
-    -proportions.map(p => if (p == 0) 0 else p * math.log(p)).sum
-  }
-
-  def informationGain(data: List[DataPoint], feature: Int): Double = {
-    val labels = data.map(_.label)
-    val totalImpurity = impurity(labels,Seq(1.0))
-    val featureValues = data.map(dp => dp.features(feature)).distinct
-    val weightedImpurities = featureValues.map { value =>
-      val subset = data.filter(dp => dp.features(feature) == value)
-      val proportion = subset.size.toDouble / data.size
-      proportion * impurity(subset.map(_.label),Seq(1.0))
-    }
-    totalImpurity - weightedImpurities.sum
-  }
+  
 
   //gini impurity
   def weightedImpurity(labels: Seq[Int], weights: Seq[Double]): Double = {
