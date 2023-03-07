@@ -31,10 +31,10 @@ object Main {
     val forest = new RandomForest(numTrees = 3, maxDepth = 1, numFeatures = numFeatures)
     forest.train(train_data)
 
-    val tree = new DecisionTree(maxDepth = 4, numFeatures = numFeatures)
+    val tree = new DecisionTreeGB(maxDepth = 4, numFeatures = numFeatures)
     val subFeatures = List.range(0, numFeatures)
     // Train the random forest on the training data
-    tree.train(train_data,subFeatures)
+    tree.train(train_data,None)
     tree.printDecisionTree()
     val acc = tree.accuracy(test_data)
     println(s"Accuracy: $acc")
