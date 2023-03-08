@@ -28,7 +28,7 @@ object Main {
     //val (trainData, testData) = splitData(data, 0.7)
     val numFeatures=4
     // Create a new random forest with 10 trees, maximum depth of 5, and 2 features per tree
-    val forest = new RandomForest(numTrees = 3, maxDepth = 1, numFeatures = numFeatures)
+    val forest = new RandomForest(numTrees = 3, maxDepth = 1)
     forest.train(train_data)
 
     val tree = new DecisionTreeGB(maxDepth = 4)
@@ -66,7 +66,7 @@ object Main {
     println(s"Accuracy: $acc_xgb")
 
     //MAP REDUCE
-    /*val sc = new SparkContext("local[*]", "Random Forest")
+    val sc = new SparkContext("local[*]", "Random Forest")
 
 
 
@@ -101,7 +101,7 @@ object Main {
 
     //Evaluate the accuracy of the predictions
     val accuracy_map = calculateAccuracy(predictions_map, test_data.map(_.label))
-    println(s"Accuracy map reduce decision tree: $accuracy_map")*/
+    println(s"Accuracy map reduce decision tree: $accuracy_map")
 
   }
 

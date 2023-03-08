@@ -7,17 +7,15 @@ import scala.util.Random
 
 case class DataPoint(features: List[Double], label: Double)
 
-class RandomForest(numTrees: Int, maxDepth: Int, numFeatures: Int) {
+class RandomForest(numTrees: Int, maxDepth: Int) {
 
-  private val trees: List[DecisionTree] =
-    List.fill(numTrees)(new DecisionTree(maxDepth, numFeatures))
+  private val trees: List[DecisionTreeGB] =
+    List.fill(numTrees)(new DecisionTreeGB(maxDepth, featureSubsetStrategy="sqrt"))
 
   def train(data: List[DataPoint]): Unit = {
-    val subFeatures = List.range(0, numFeatures)
     trees.foreach(tree => {
-      val subTreeFeatures = Random.shuffle(subFeatures).take(Math.sqrt(numFeatures).toInt)
-      val subData = selectDataWithReplacement(data)
-      tree.train(data, subTreeFeatures)
+
+      tree.train(data,None)
     })
   }
 
@@ -29,14 +27,13 @@ class RandomForest(numTrees: Int, maxDepth: Int, numFeatures: Int) {
     counts.maxBy(_._2)._1
   }
 
-  private def selectDataWithReplacement(data: List[DataPoint]): List[DataPoint] =
-    List.fill(data.length)(data(Random.nextInt(data.length)))
+
 
 }
 
 object RandomForest {
-  def apply(numTrees: Int, maxDepth: Int, numFeatures: Int): RandomForest =
-    new RandomForest(numTrees, maxDepth, numFeatures)
+  def apply(numTrees: Int, maxDepth: Int): RandomForest =
+    new RandomForest(numTrees, maxDepth)
 }
 
 
