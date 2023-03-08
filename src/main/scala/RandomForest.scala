@@ -5,7 +5,7 @@ import shaded.parquet.it.unimi.dsi.fastutil.longs.LongLists.EmptyList
 import scala.util.Random
 
 
-case class DataPoint(features: List[Double], label: Int)
+case class DataPoint(features: List[Double], label: Double)
 
 class RandomForest(numTrees: Int, maxDepth: Int, numFeatures: Int) {
 
@@ -21,7 +21,7 @@ class RandomForest(numTrees: Int, maxDepth: Int, numFeatures: Int) {
     })
   }
 
-  def predict(dataPoint: DataPoint): Int = {
+  def predict(dataPoint: DataPoint): Double = {
     val predictions = trees.map(_.predict(dataPoint)
     )
     val counts = predictions.groupBy(identity).mapValues(_.size

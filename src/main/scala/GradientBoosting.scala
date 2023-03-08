@@ -1,81 +1,126 @@
-/*
+
 package it.unibo.andrp
 
 import scala.math.exp
 
+import scala.collection.mutable.ArrayBuffer
 
-class GradientBoosting(val numIterations: Int, val learningRate: Double, val numFeatures: Int, val maxDepth: Int, numClasses: Int) {
+class GradientBoostingClassifier(
+                                  val numIterations: Int,
+                                  val learningRate: Double,
+                                  val maxDepth: Int,
+                                  val minSplitSize: Int,
+                                  val featureSubsetStrategy: String,
+                                  val impurityFunc: String,
+                                  val gamma: Int = 1
+                                ) {
 
-  var trees: List[DecisionTree] = List()
 
-  // Inizializzazione dei pesi delle istanze a 1/N
-  var weights: Array[Array[Double]] = Array.fill(numClasses, numFeatures)(1.0 / numFeatures)
+  var trees = ArrayBuffer.empty[DecisionTreeGB]
 
-  def train(data: List[DataPoint]): Unit = {
+  def train(
+             data: Seq[DataPoint]
+           ): Unit = {
     val n = data.length
+    // Inizializzazione dei pesi
+    var weights = Seq.fill(n)(1.0)
+    val learningRateScaled = learningRate / n.toDouble
 
-    // Creazione del modello costante f0
-    val f0 = Array.fill(n)(Array.fill(numClasses)(1.0 / numClasses))
+    // Initialize residuals
 
-    // Iterazione dell'algoritmo di Gradient Boosting
+    val labels = data.map(_.label)
+    val residuals = labels
+    var updated_data= data.toList
     for (i <- 0 until numIterations) {
-      // Calcolo dei residui
-      val r = Array.ofDim[Double](n, numClasses)
-      for (j <- 0 until n) {
-        for (k <- 0 until numClasses) {
-          r(j)(k) = data(j).label - f0(j)(k)
-        }
-      }
+      // Compute negative gradients
+      // Calcolo i negative gradients
 
-      // Creazione del nuovo modello debolissimo
-      val tree = new DecisionTreeGB(maxDepth ,numFeatures)
-      tree.train(data.map(_.features).toArray, r)
+      // Train a decision tree on the negative gradients
+      val tree = new DecisionTreeGB(
+        maxDepth = maxDepth,
+        minSplitSize = minSplitSize,
+        featureSubsetStrategy = featureSubsetStrategy,
+        impurityMeasure = impurityFunc
+      )
+      tree.train(updated_data, Some(weights))
+      // Add the new tree to the list of trees
+      trees += tree
+      // Compute residuals and negative gradients
+      val predictions = data.map(this.predict)
 
-      // Aggiornamento dei pesi
-      val p = data.map(dp => tree.predict(dp.features.toArray)).toArray
-      val eta = learningRate / (1.0 + i)
-      for (j <- 0 until n) {
-        for (k <- 0 until numClasses) {
-          weights(k) = weights(k).updated(j, weights(k)(j) * exp(-eta * r(j)(k) * p(j)(k)))
-        }
-      }
+      val negativeGradients = computeGradients(updated_data.map(_.label),predictions.toList,weights.toList,mseLoss)
+      val residuals:Seq[Double] = computeResiduals(updated_data.map(_.label), negativeGradients)
 
-      // Normalizzazione dei pesi
-      for (j <- 0 until n) {
-        val wsum = weights.map(_(j)).sum
-        for (k <- 0 until numClasses) {
-          weights(k) = weights(k).updated(j, weights(k)(j) / wsum)
-        }
-      }
+      updated_data = updateLabels(data.toList, residuals)
 
-      // Aggiunta del nuovo albero all'ensemble
-      trees = trees :+ tree
+      // Aggiorno i pesi
+      weights = weights.zipWithIndex.map { case (w, j) =>
+        w * Math.exp(-learningRate * predict(data(j)))
+      }.toList
 
-      // Aggiornamento del modello f0
-      for (j <- 0 until n) {
-        for (k <- 0 until numClasses) {
-          f0(j)(k) = 0.0
-          for (t <- trees.indices) {
-            f0(j)(k) += weights(k)(j) * trees(t).predict(data(j).features.toArray)(0)
-          }
-        }
-      }
+      val sumWeights = weights.sum
+      weights = weights.map(_ / sumWeights)
+
+
+
+
     }
   }
+  def computeGradients(predictions: List[Double], labels: List[Double], weights: List[Double], lossFunction: (Double, Double) => Double): List[Double] = {
+    val gradients = for ((prediction, label, weight) <- (predictions, labels, weights).zipped.toList) yield {
+      weight * lossFunction(prediction, label)
+    }
+    gradients
+  }
 
-  def predict(data: List[DataPoint]): List[Double] = {
-    val n = data.length
-    val scores = Array.ofDim[Double](n, numClasses)
+  def computeResiduals(labels: Seq[Double], predictions: Seq[Double]): Seq[Double] = {
+    val n = labels.length
+    val residuals = new Array[Double](n)
     for (i <- 0 until n) {
-      for (j <- 0 until numClasses) {
-        scores(i)(j) = 0.0
-        for (t <- trees.indices) {
-          scores(i)(j) += learningRate * trees(t).predict(data(i).features.toArray)(0)
-        }
-      }
+      residuals(i) = labels(i) - predictions(i)
     }
-    scores.map(_.indexOf(scores.max)).toList
+    residuals
   }
-}
+  def mseLoss(y: Double, ypred: Double): Double = {
+    math.pow(y - ypred, 2)
+  }
 
-*/
+
+
+  def updateLabels(data: List[DataPoint], residual: Seq[Double]): List[DataPoint] = {
+    data.zip(residual).map { case (dp, res) =>
+      DataPoint(dp.features, res)
+    }
+  }
+
+  def predict(data: DataPoint): Double = {
+    // Calcolo la somma delle predizioni degli alberi
+    val alpha = List.fill(trees.size)(1.0/trees.size)//(0 to trees.size).map(i => learningRate / (1 + gamma * i))
+    var prediction = 0.0
+    for ((tree,alpha) <- trees.zip(alpha)) { // trees è la lista degli alberi del modello
+      prediction += alpha * tree.predict(data) // learningRate è il parametro di apprendimento
+    }
+    prediction
+  }
+  def normalizeList(l: List[Double]): List[Double] = {
+    val minVal = l.min
+    val maxVal = l.max
+    l.map(x => 2 * (x - minVal) / (maxVal - minVal) - 1)
+  }
+
+  def accuracy(dataset: List[DataPoint]): Double = {
+    val predictions = dataset.map(this.predict)
+    val correct = predictions.zip(dataset).count { case (pred, dp) => pred == dp.label }
+    correct.toDouble / dataset.length.toDouble
+  }
+  def accuracyWithTolerance(dataset: List[DataPoint], tolerance: Double): Double = {
+
+    val predictions = dataset.map(this.predict)
+    val numCorrect = predictions.zip(dataset.map(_.label)).count { case (pred, label) =>
+      Math.abs(pred - label) <= tolerance
+    }
+    numCorrect.toDouble / predictions.length
+  }
+
+
+}

@@ -26,12 +26,12 @@ object Main {
 
     // Split data into training and testing sets
     //val (trainData, testData) = splitData(data, 0.7)
-    val numFeatures=32
+    val numFeatures=4
     // Create a new random forest with 10 trees, maximum depth of 5, and 2 features per tree
     val forest = new RandomForest(numTrees = 3, maxDepth = 1, numFeatures = numFeatures)
     forest.train(train_data)
 
-    val tree = new DecisionTreeGB(maxDepth = 4, numFeatures = numFeatures)
+    val tree = new DecisionTreeGB(maxDepth = 4)
     val subFeatures = List.range(0, numFeatures)
     // Train the random forest on the training data
     tree.train(train_data,None)
@@ -46,15 +46,29 @@ object Main {
     val accuracy = calculateAccuracy(predictions, test_data.map(_.label))
     println(s"Accuracy forest: $accuracy")
 
-
-
-    //MAP REDUCE
-    val sc = new SparkContext("local[*]", "Random Forest")
-
     // Parametri dell'algoritmo
     val numTrees = 5
-    val maxDepth = 10
-    val minSplitSize = 2
+    val maxDepth = 3
+    val minSplitSize = 10
+
+
+    //XGoost
+    var xgb = GradientBoostingClassifier(
+      numIterations=15,
+      learningRate=0.2,
+      maxDepth=maxDepth,
+      minSplitSize=minSplitSize,
+      featureSubsetStrategy="sqrt",
+      impurityFunc="gini")
+    xgb.train(train_data)
+
+    val acc_xgb = xgb.accuracyWithTolerance(test_data,0.5)
+    println(s"Accuracy: $acc_xgb")
+
+    //MAP REDUCE
+    /*val sc = new SparkContext("local[*]", "Random Forest")
+
+
 
     // Caricamento del dataset e creazione di RDD
     //val data_mapred = sc.textFile("data/weatherAUS-final.csv")
@@ -77,7 +91,7 @@ object Main {
     }
 
     // Funzione di predizione
-    def predict(point: DataPoint): Int = {
+    def predict(point: DataPoint): Double = {
       val predictions = trees.map(tree => tree.predict(point))
       predictions.groupBy(identity).mapValues(_.size).maxBy(_._2)._1
     }
@@ -87,7 +101,7 @@ object Main {
 
     //Evaluate the accuracy of the predictions
     val accuracy_map = calculateAccuracy(predictions_map, test_data.map(_.label))
-    println(s"Accuracy map reduce decision tree: $accuracy_map")
+    println(s"Accuracy map reduce decision tree: $accuracy_map")*/
 
   }
 
@@ -100,7 +114,7 @@ object Main {
   }
 
   // Utility function to calculate accuracy of predictions
-  def calculateAccuracy(predictions: List[Int], labels: List[Int]): Double = {
+  def calculateAccuracy(predictions: List[Double], labels: List[Double]): Double = {
     val correctCount = predictions.zip(labels).count { case (predicted, actual) => predicted == actual }
     correctCount.toDouble / labels.size
   }

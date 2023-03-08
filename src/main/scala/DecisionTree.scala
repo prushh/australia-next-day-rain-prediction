@@ -15,7 +15,7 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
     root = Some(buildTree(data, 0))
   }
 
-  def predict(dataPoint: DataPoint): Int = {
+  def predict(dataPoint: DataPoint): Double = {
     root match {
       case Some(node) => node.predict(dataPoint)
       case None => throw new Exception("Tree has not been trained yet")
@@ -48,7 +48,7 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
   private def isHomogeneous(data: List[DataPoint]): Boolean =
     data.map(_.label).distinct.length <= 1
 
-  private def getMajorityClass(data: List[DataPoint]): Int =
+  private def getMajorityClass(data: List[DataPoint]): Double =
     data.groupBy(_.label).mapValues(_.size).maxBy(_._2)._1
 
   private def splitData(data: List[DataPoint]): (List[DataPoint], List[DataPoint], Int, Double) = {
@@ -72,7 +72,7 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
     (featureValues.min + featureValues.max) / 2.0
   }
 
-  def findBestThreshold(data: List[DataPoint], featureIndex: Int, impurityFunc: List[Int] => Double): Double = {
+  def findBestThreshold(data: List[DataPoint], featureIndex: Int, impurityFunc: List[Double] => Double): Double = {
     val sortedData = data.sortBy(_.features(featureIndex))
     var bestThreshold = 0.0
     var bestGain = 0.0
@@ -97,18 +97,18 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
   }
 
   sealed trait Node {
-    def predict(dataPoint: DataPoint): Int
+    def predict(dataPoint: DataPoint): Double
 
 
   }
 
-  case class Leaf(label: Int) extends Node {
+  case class Leaf(label: Double) extends Node {
 
-    def predict(dataPoint: DataPoint): Int = label
+    def predict(dataPoint: DataPoint): Double = label
   }
 
   case class InternalNode(feature: Int, threshold: Double, left: Node, right: Node) extends Node {
-    def predict(dataPoint: DataPoint): Int =
+    def predict(dataPoint: DataPoint): Double =
       if (dataPoint.features(feature) <= threshold) left.predict(dataPoint) else right.predict(dataPoint)
   }
 
@@ -134,7 +134,7 @@ class DecisionTree(val maxDepth: Int, val numFeatures: Int) {
     printTree(this.root.get)
   }
 
-  def impurity(labels: List[Int]): Double = {
+  def impurity(labels: List[Double]): Double = {
     val counts = labels.groupBy(identity).mapValues(_.size)
     val proportions = counts.values.map(_.toDouble / labels.size)
     -proportions.map(p => if (p == 0) 0 else p * math.log(p)).sum
