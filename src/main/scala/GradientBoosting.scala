@@ -6,12 +6,12 @@ import scala.math.exp
 import scala.collection.mutable.ArrayBuffer
 
 class GradientBoostingClassifier(
-                                  val numIterations: Int,
-                                  val learningRate: Double,
-                                  val maxDepth: Int,
-                                  val minSplitSize: Int,
-                                  val featureSubsetStrategy: String,
-                                  val impurityFunc: String,
+                                  val numIterations: Int=10,
+                                  val learningRate: Double=0.1,
+                                  val maxDepth: Int=4,
+                                  val minSplitSize: Int=10,
+                                  val featureSubsetStrategy: String="all",
+                                  val impurityFunc: String="gini",
                                   val gamma: Int = 1
                                 ) {
 

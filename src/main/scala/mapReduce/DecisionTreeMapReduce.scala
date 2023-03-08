@@ -1,7 +1,6 @@
 package it.unibo.andrp
 package mapReduce
 
-import Main.calculateAccuracy
 
 import it.unibo.andrp.DataPoint
 import org.apache.spark.rdd.RDD
