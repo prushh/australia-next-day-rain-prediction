@@ -10,7 +10,6 @@ import scala.util.Random
 package object global {
   type DataFrame[A] = Vector[Vector[A]]
 }
-import breeze.plot._
 import global._
 import utils._
 
@@ -26,7 +25,15 @@ object Main extends App {
 
   //MAP REDUCE
   val sc = new SparkContext("local[*]", "Random Forest")
-
+  /*val decisionTreeMapReduceIn = new DecisionTreeMapReduceIn()
+  decisionTreeMapReduceIn.train(sc.parallelize(train_data),None)
+  val accuracyDTMP = decisionTreeMapReduceIn.accuracy(test_data)
+  println(s"Accuracy Decision tree: $accuracyDTMP")*/
+  val rndf = new RandomForest(numTrees = 5,maxDepth = 2)
+  rndf.train(sc.parallelize(train_data))
+  val accuracyForest = rndf.accuracy(test_data)
+  println(s"Accuracy Decision tree: $accuracyForest")
+/*
 
   var clfDT = new DecisionTreeMapReduce(sc)
   clfDT.train(train_data)
@@ -48,6 +55,7 @@ object Main extends App {
   val accuracyGB = clfGB.accuracy(test_data)
   println(s"Accuracy GradientBoosting: $accuracyGB")
 
+*/
 
 
 

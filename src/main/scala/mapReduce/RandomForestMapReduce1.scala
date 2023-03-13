@@ -13,7 +13,7 @@ class RandomForestMapReduce1(sc: SparkContext, numCluster: Int = 5, numTrees: In
     // Creazione degli alberi
     rfs = rfs.map { rf =>
       val sample = data_mapred.sample(true, fraction)
-      rf.train(sample.collect().toList)
+      rf.train(sample)
       rf
     }
   }
