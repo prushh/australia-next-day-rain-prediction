@@ -15,7 +15,7 @@ object KNN {
   def knnMapReduce(data: RDD[DataPoint], k: Int, query: DataPoint): Double = {
     // Map phase: calculate distances between the query point and all data points
     val distances = data.map { x =>
-      (x, euclideanDistance(query, x))
+      (x.label, euclideanDistance(query, x))
     }
 
     // Reduce phase: collect the k nearest neighbors
@@ -25,7 +25,7 @@ object KNN {
       .mapValues(_.size)
 
     // restituisco la classe con la maggioranza dei voti
-    nearestNeighbors.maxBy { case (_, count) => count }._1.label
+    nearestNeighbors.maxBy { case (_, count) => count }._1
   }
 
 

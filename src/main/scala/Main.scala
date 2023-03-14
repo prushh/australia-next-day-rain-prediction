@@ -29,6 +29,9 @@ def run(): Unit = {
 
     val rddDataset = getDataPoints(csvDataset)
     val (trainingData, testData) = splitData(rddDataset, 0.8, 42L)
+    val k = 3
+    val accuracy = KNN.accuracy(trainingData, testData.collect().toSeq, k)
+    println(s"Accuracy: $accuracy")
 
 //    testData.collect().map(point => point.label = -1)
 //
