@@ -1,9 +1,11 @@
 package it.unibo.andrp
 package utils
 
+import model.DataPoint
+
 object ReadCSV {
 
-  def apply(path: String): (DataFrame[Double], Vector[Int]) = {
+  def apply(path: String): (Vector[Vector[Double]], Vector[Int]) = {
 
     def toDouble(v: String): Double = v.trim() match {
       case x => x.toDouble
