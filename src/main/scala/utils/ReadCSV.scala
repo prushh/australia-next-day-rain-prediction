@@ -20,7 +20,7 @@ object ReadCSV {
     val rows = lines.map(_.split(",").map(toDouble));
 
     
-    // dividing the target column from the feature column // TODO: bisogna farlo dopo divisione in chunks
+    // dividing the target column from the feature column
     val target = rows.map(_.last)
     val features = rows.map(_.init)
     val features_svm = (features.map(_.init)).map(_.tail)
@@ -28,13 +28,11 @@ object ReadCSV {
       case 0.0 => -1
       case 1.0 => 1
     }
+    
     source.close()
+    
     // creating the pair of matrix of doubles and vector of doubles
     (features_svm.map(_.toVector),target_svm)
-
-
-    
-    //rows.map(i => Vector(i(0), i(1)))
   }
 
 
