@@ -32,12 +32,25 @@ def run(): Unit = {
     val k = 3
     val accuracy = KNN.accuracy(trainingData, testData.collect().toSeq, k)
     println(s"Accuracy: $accuracy")
+
+     //MAP REDUCE
+  val sc = new SparkContext("local[*]", "Random Forest")
+  /*val decisionTreeMapReduceIn = new DecisionTreeMapReduceIn()
+  decisionTreeMapReduceIn.train(trainingData,None)
+  val accuracyDTMP = decisionTreeMapReduceIn.accuracy(test_data.collect())
+  println(s"Accuracy Decision tree: $accuracyDTMP")*/
+  val rndf = new RandomForest(numTrees = 5,maxDepth = 2)
+  rndf.train(trainingData)
+  val accuracyForest = rndf.accuracy(test_data.collect())
+  println(s"Accuracy Decision tree: $accuracyForest")
     
 }
+
 
 def splitData(data: RDD[DataPoint], trainingRatio: Double, seed: Long): (RDD[DataPoint], RDD[DataPoint]) = {
     val splits = data.randomSplit(Array(trainingRatio, 1.0 - trainingRatio), seed)
     (splits(0), splits(1))
+
 }
 
 
