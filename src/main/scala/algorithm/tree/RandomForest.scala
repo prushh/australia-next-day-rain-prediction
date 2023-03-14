@@ -1,19 +1,18 @@
 package it.unibo.andrp
+package algorithm.tree
 
+import model.DataPoint
+import it.unibo.andrp.algorithm.tree.DecisionTreeMR
 import org.apache.spark.SparkContext
 import shaded.parquet.it.unimi.dsi.fastutil.longs.LongLists.EmptyList
-
 import org.apache.spark.rdd.RDD
 
 import scala.util.Random
 
-
-case class DataPoint( features: List[Double], label: Double)
-
 class RandomForest(numTrees: Int, maxDepth: Int) {
 
-  private val trees: List[DecisionTreeMapReduceIn] =
-    List.fill(numTrees)(new DecisionTreeMapReduceIn(maxDepth, featureSubsetStrategy="sqrt"))
+  private val trees: List[DecisionTreeMR] =
+    List.fill(numTrees)(new DecisionTreeMR(maxDepth, featureSubsetStrategy="sqrt"))
 
   def train(data: RDD[DataPoint]): Unit = {
     trees.foreach(tree => {

@@ -5,8 +5,9 @@ import org.apache.spark.SparkContext
 import config.SparkProjectConfig
 import algorithm.knn.KNN
 import model.DataPoint
-
 import algorithm.getDataPoints
+
+import it.unibo.andrp.algorithm.tree.{DecisionTreeMR, RandomForest}
 import org.apache.spark.rdd.RDD
 
 @main
@@ -29,20 +30,23 @@ def run(): Unit = {
 
     val rddDataset = getDataPoints(csvDataset)
     val (trainingData, testData) = splitData(rddDataset, 0.8, 42L)
+
+    /* KNN MAP REDUCE */
     val k = 3
     val accuracy = KNN.accuracy(trainingData, testData.collect().toSeq, k)
     println(s"Accuracy: $accuracy")
 
-     //MAP REDUCE
-  val sc = new SparkContext("local[*]", "Random Forest")
-  /*val decisionTreeMapReduceIn = new DecisionTreeMapReduceIn()
-  decisionTreeMapReduceIn.train(trainingData,None)
-  val accuracyDTMP = decisionTreeMapReduceIn.accuracy(test_data.collect())
-  println(s"Accuracy Decision tree: $accuracyDTMP")*/
-  val rndf = new RandomForest(numTrees = 5,maxDepth = 2)
-  rndf.train(trainingData)
-  val accuracyForest = rndf.accuracy(test_data.collect())
-  println(s"Accuracy Decision tree: $accuracyForest")
+    /* DECISION TREE MAP REDUCE */
+    val decisionTreeMapReduceIn = new DecisionTreeMR()
+    decisionTreeMapReduceIn.train(trainingData,None)
+    val accuracyDTMP = decisionTreeMapReduceIn.accuracy(testData.collect().toList)
+    println(s"Accuracy Decision tree: $accuracyDTMP")
+
+
+    val rndf = new RandomForest(numTrees = 5,maxDepth = 2)
+    rndf.train(trainingData)
+    val accuracyForest = rndf.accuracy(testData.collect().toList)
+    println(s"Accuracy Decision tree: $accuracyForest")
     
 }
 
