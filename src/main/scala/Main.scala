@@ -1,14 +1,14 @@
 package it.unibo.andrp
 
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.SparkContext
-import config.SparkProjectConfig
-import algorithm.knn.KNN
-import model.DataPoint
 import algorithm.getDataPoints
+import algorithm.knn.KNN
+import algorithm.tree.{DecisionTree, GradientBoosting, RandomForest}
+import config.SparkProjectConfig
+import model.DataPoint
 
-import it.unibo.andrp.algorithm.tree.{DecisionTreeMR, RandomForest}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.SparkSession
 
 @main
 def run(): Unit = {
@@ -31,23 +31,31 @@ def run(): Unit = {
     val rddDataset = getDataPoints(csvDataset)
     val (trainingData, testData) = splitData(rddDataset, 0.8, 42L)
 
-    /* KNN MAP REDUCE */
-    val k = 3
-    val accuracy = KNN.accuracy(trainingData, testData.collect().toSeq, k)
-    println(s"Accuracy: $accuracy")
 
-    /* DECISION TREE MAP REDUCE */
-    val decisionTreeMapReduceIn = new DecisionTreeMR()
-    decisionTreeMapReduceIn.train(trainingData,None)
-    val accuracyDTMP = decisionTreeMapReduceIn.accuracy(testData.collect().toList)
+    /* KNN MAP REDUCE */
+    val t0KNNMP = System.nanoTime
+    val k = 3
+    val accuracyKNNMP = KNN.accuracy(trainingData, testData.collect().toSeq, k)
+    val durationKNNMP = (System.nanoTime - t0KNNMP) / 1e9d // 10^9 in order to be a double
+    println(s"KNN Map Reduce:\n\t- Accuracy: $accuracyKNNMP,\n\t- Duration: $durationKNNMP")
+
+    /* DECISION TREE MAP REDUCE*/
+    val decisionTree = new DecisionTree(par = true)
+    decisionTree.train(trainingData,None)
+    val accuracyDTMP = decisionTree.accuracy(testData.collect().toList)
     println(s"Accuracy Decision tree: $accuracyDTMP")
 
 
-    val rndf = new RandomForest(numTrees = 5,maxDepth = 2)
+    val rndf = new RandomForest(numTrees = 5,maxDepth = 2, par = true)
     rndf.train(trainingData)
     val accuracyForest = rndf.accuracy(testData.collect().toList)
     println(s"Accuracy Decision tree: $accuracyForest")
-    
+
+    val gb = new GradientBoosting(par = true)
+    gb.train(trainingData)
+    val accuracyGb = gb.accuracy(testData.collect().toList)
+    println(s"Accuracy Decision tree: $accuracyGb")
+
 }
 
 
