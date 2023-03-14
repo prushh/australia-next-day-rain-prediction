@@ -1,5 +1,6 @@
 val scala321 = "3.2.1"
-val sparkVersion = "3.3.1"
+val sparkVersion = "3.2.1"
+val breezeVersion = "2.1.0"
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := scala321
@@ -12,12 +13,7 @@ lazy val root = (project in file("."))
           ("org.apache.spark" %% "spark-core" % sparkVersion).cross(CrossVersion.for3Use2_13),
           ("org.apache.spark" %% "spark-sql" % sparkVersion).cross(CrossVersion.for3Use2_13),
           ("org.apache.spark" %% "spark-mllib" % sparkVersion).cross(CrossVersion.for3Use2_13),
-          ("com.github.nscala-time" %% "nscala-time" % "2.32.0").cross(CrossVersion.for3Use2_13),
-        ("org.scalanlp" %% "breeze" % "2.1.0").cross(CrossVersion.for3Use2_13),
-
-        // The visualization library is distributed separately as well.
-        // It depends on LGPL code
-        ("org.scalanlp" %% "breeze-viz" % "2.1.0").cross(CrossVersion.for3Use2_13)
-
+          ("org.scalanlp" %% "breeze" % breezeVersion).cross(CrossVersion.for3Use2_13),
+          ("org.scalanlp" %% "breeze-viz" % breezeVersion).cross(CrossVersion.for3Use2_13)
       )
-)
+  )

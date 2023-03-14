@@ -1,6 +1,8 @@
 package it.unibo.andrp
 package utils
 
+import model.DataPoint
+
 object ReadCSV {
 
   def apply(path: String): (Vector[Vector[Double]], Vector[Int]) = {
