@@ -1,7 +1,7 @@
 package it.unibo.andrp
 package config
 
-import algorithm.knn.Distance
+import algorithm.knn.Distances
 
 object AlgorithmConfig {
 
@@ -10,6 +10,6 @@ object AlgorithmConfig {
 
     object Knn {
         val NUMBER_NEAREST_NEIGHBORS = 3
-        val DISTANCE_METHOD = Distance.Euclidean
+        val DISTANCE_METHOD = Distances.Euclidean
     }
 }

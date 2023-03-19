@@ -8,25 +8,56 @@ import dataset.getDataPoints
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
+import org.rogach.scallop.{ScallopConf, ScallopOption, intConverter, stringConverter}
 
 import scala.util.Random
+import scala.util.CommandLineParser
+
+
+class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
+    val master: ScallopOption[String] = opt[String]("master", default = Some("local[*]"))
+    val datasetPath: ScallopOption[String] = opt[String]("datasetPath", default = Some("weatherAUS-final.csv"))
+    val parallelism: ScallopOption[Int] = opt[Int]("parallelism", default = Some(1))
+    verify()
+}
+
+
+given CommandLineParser[Array[String]] = CommandLineParser.identityParser
 
 @main
-def run(): Unit = {
+def run(args: Array[String]): Unit = {
+    /*
+     * Checking arguments.
+     */
+    val conf = new Conf(args)
+    val master = conf.master.getOrElse("default-value")
+    val datasetPath = conf.datasetPath.getOrElse("default-value")
+    val parallelism = conf.parallelism.getOrElse("default-value")
 
-    // TODO: get params from array
+    println(s"master: $master")
+    println(s"datasetPath: $datasetPath")
 
-    val master = "local[*]"
-    val parallelism = 2
+//    println("Configuration:")
+//    println(s"- master: $master")
+//    println(s"- dataset path: $datasetPath")
+//    println(s"- execution type: $datasetPath")
+//    println(s"- initialized Spark Context with parallelism: $parallelism")
 
+    /*
+     * Loading Spark and Hadoop.
+     */
     val sparkSession = SparkProjectConfig.sparkSession(master, parallelism)
     val sparkContext = sparkSession.sparkContext
 
-    val datasetPath = "data/weatherAUS-final.csv"
+    /*
+     * Loading the dataset.
+     */
     val csvDataset = sparkSession.read
       .option("header", value = true)
       .csv(datasetPath)
       .limit(1000)
+
+    println("Dataset loaded!")
 
     val (trainingData, testData) = getDataPoints(csvDataset)
 

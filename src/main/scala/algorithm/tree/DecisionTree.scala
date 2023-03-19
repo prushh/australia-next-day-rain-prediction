@@ -51,7 +51,7 @@ class DecisionTree(maxDepth: Int = 3, featureSubsetStrategy: String = "all", min
   }
 
 
-  def filterFeatures(data: Seq[DataPoint], featureIndices: Seq[Int]): Seq[DataPoint] = {
+  def filterFeatures(data: RDD[DataPoint], featureIndices: Seq[Int]): RDD[DataPoint] = {
     data.map(dp => dp.copy(features = featureIndices.map(i => dp.features(i)).toList))
   }
 
@@ -59,7 +59,7 @@ class DecisionTree(maxDepth: Int = 3, featureSubsetStrategy: String = "all", min
     //feature selection initialization
     val features = data.collect().head.features.indices
     val featureSubset = getFeatureSubset(features)
-    val data_filtered = filterFeatures(data.collect(), featureSubset)
+    val data_filtered = filterFeatures(data, featureSubset)
 
     //weights intialization if there's no weight vector
     val w = weights match {
@@ -90,7 +90,7 @@ class DecisionTree(maxDepth: Int = 3, featureSubsetStrategy: String = "all", min
     if (maxDepth == 0 || labels.size < minSplitSize) {
       Leaf(getMajorityWeighted(labels, weights))
     } else {
-      val (bestFeature, bestSplits, bestGain) = findFeatures(data, weights, impurityFunc)
+      val (bestFeature, bestSplits, bestGain) = selectBestFeatureMapReduce2(data, generateFeatures(data.collect().toList), weights, impurityFunc)
       if (bestGain == 0.0) {
         Leaf(getMajorityWeighted(labels, weights))
       } else {
@@ -139,6 +139,32 @@ class DecisionTree(maxDepth: Int = 3, featureSubsetStrategy: String = "all", min
                                   impurityFunc: (Seq[Double], Seq[Double]) => Double
                                 ): (Int, Double, Double) = {
     val features = generateFeatures(data.collect().toList)
+    val featureValuesRDD = data.flatMap { dp =>
+      features.map { feature =>
+        (feature.id, dp.features(feature.id))
+      }
+    }
+    val dataSeq = data.collect.toSeq
+    val impurityReductionsRDD = featureValuesRDD.groupByKey().flatMap { case (featureId, values) =>
+
+      values.toArray.sorted.distinct.sliding(2).map { case Array(v1, v2) => {
+        val threshold = (v1 + v2) / 2
+        (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
+      }
+      case Array(v1) => {
+        (featureId, v1, 0.0)
+      }
+      }
+    }
+    println(impurityReductionsRDD.collect().length)
+    val res = impurityReductionsRDD.collect().maxBy(_._3)
+    res
+  }
+
+  def selectBestFeatureMapReduce2(data: RDD[DataPoint], features: Seq[Feature], weights: Seq[Double], impurityFunc: (Seq[Double], Seq[Double]) => Double
+                                ):
+  (Int, Double, Double) = {
+
     val featureValuesRDD = data.flatMap { dp =>
       features.map { feature =>
         (feature.id, dp.features(feature.id))

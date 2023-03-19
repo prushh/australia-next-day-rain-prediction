@@ -3,7 +3,7 @@ package algorithm
 
 import model.DataPoint
 import config.AlgorithmConfig
-import algorithm.knn.Distance.DistanceFunc
+import algorithm.knn.Distances.DistanceFunc
 
 import org.apache.spark.{RangePartitioner, SparkContext}
 import org.apache.spark.rdd.RDD
@@ -13,8 +13,8 @@ package object knn {
     def classify(sparkContext: SparkContext)(trainData: RDD[DataPoint], testData: Seq[DataPoint]): Unit = {
         // Choose distance function
         val distance: DistanceFunc = AlgorithmConfig.Knn.DISTANCE_METHOD match {
-            case Distance.Euclidean => Distance.euclidean
-            case Distance.Manhattan => Distance.manhattan
+            case Distances.Euclidean => Distances.euclidean
+            case Distances.Manhattan => Distances.manhattan
         }
 
         // Compute predictions
@@ -33,7 +33,7 @@ package object knn {
             _.label
         }
 
-        // Count correct predictions comparing with labels
+        // Count correct predictions by comparing them with the labels
         val correctPredictions = (predictions zip labels).count {
             case (prediction, label) => prediction == label
         }
@@ -44,16 +44,19 @@ package object knn {
     }
 
     private def _classify(trainData: RDD[DataPoint], testPoint: DataPoint, k: Int, distance: DistanceFunc): Double = {
+        // Compute distances
         val distances = trainData map { point =>
             val dist = distance(testPoint, point)
             (point.label, dist)
         }
 
+        // Get kNNs based on distances value
         val kNearestNeighbors = (distances takeOrdered k)(Ordering[Double] on (_._2))
-
+        // Get only labels
         val labels = kNearestNeighbors map (_._1)
-
+        // Count occurrences for each label value
         val labelCounts = (labels groupBy identity).view.mapValues(_.length)
+        // Get label with the highest count
         labelCounts.maxBy(_._2)._1
     }
 }

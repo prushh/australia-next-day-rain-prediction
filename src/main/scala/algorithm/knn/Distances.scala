@@ -3,8 +3,8 @@ package algorithm.knn
 
 import model.DataPoint
 
-object Distance extends Enumeration {
-    type Distance = Value
+object Distances extends Enumeration {
+    type Distances = Value
     type DistanceFunc = (DataPoint, DataPoint) => Double
     
     val Euclidean, Manhattan = Value
