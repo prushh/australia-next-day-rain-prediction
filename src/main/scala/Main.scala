@@ -8,40 +8,20 @@ import dataset.getDataPoints
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import org.rogach.scallop.{ScallopConf, ScallopOption, intConverter, stringConverter}
-
-import scala.util.Random
-import scala.util.CommandLineParser
-
-
-class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-    val master: ScallopOption[String] = opt[String]("master", default = Some("local[*]"))
-    val datasetPath: ScallopOption[String] = opt[String]("datasetPath", default = Some("weatherAUS-final.csv"))
-    val parallelism: ScallopOption[Int] = opt[Int]("parallelism", default = Some(1))
-    verify()
-}
-
-
-given CommandLineParser[Array[String]] = CommandLineParser.identityParser
 
 @main
-def run(args: Array[String]): Unit = {
+def run(classifier: String, master: String, dataset: String, parallelism: Int, limit: Boolean): Unit = {
     /*
      * Checking arguments.
      */
-    val conf = new Conf(args)
-    val master = conf.master.getOrElse("default-value")
-    val datasetPath = conf.datasetPath.getOrElse("default-value")
-    val parallelism = conf.parallelism.getOrElse("default-value")
+    val datasetPath = s"data/$dataset"
+    val numRows = if (limit) 1000 else 60000 // cardinality: 63754
 
-    println(s"master: $master")
-    println(s"datasetPath: $datasetPath")
-
-//    println("Configuration:")
-//    println(s"- master: $master")
-//    println(s"- dataset path: $datasetPath")
-//    println(s"- execution type: $datasetPath")
-//    println(s"- initialized Spark Context with parallelism: $parallelism")
+    println("Configuration:")
+    println(s"- algorithm: $classifier")
+    println(s"- master: $master")
+    println(s"- dataset path: $datasetPath")
+    println(s"- initialized Spark Context with parallelism: $parallelism")
 
     /*
      * Loading Spark and Hadoop.
@@ -55,14 +35,20 @@ def run(args: Array[String]): Unit = {
     val csvDataset = sparkSession.read
       .option("header", value = true)
       .csv(datasetPath)
-      .limit(1000)
+      .limit(numRows)
 
     println("Dataset loaded!")
 
     val (trainingData, testData) = getDataPoints(csvDataset)
 
-    val knnClassifier = algorithm.knn.classify(sparkContext) _
-    time("[kNN]", knnClassifier(trainingData, testData))
+    classifier match {
+        case "knn" =>
+            val knnClassifier = algorithm.knn.classify(sparkContext) _
+            time("[kNN]", knnClassifier(trainingData, testData))
+        // case "decision-tree" =>
+        // case "gradient-boosting" =>
+        // case "random-forest" =>
+    }
 
     /* DECISION TREE MAP REDUCE*/
     //    val decisionTree = new DecisionTreeMapReduceIn(par=true)

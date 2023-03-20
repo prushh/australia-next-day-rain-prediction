@@ -4,9 +4,8 @@ package algorithm.knn
 import model.DataPoint
 
 object Distances extends Enumeration {
-    type Distances = Value
     type DistanceFunc = (DataPoint, DataPoint) => Double
-    
+
     val Euclidean, Manhattan = Value
     def euclidean(a: DataPoint, b: DataPoint): Double = {
         math.sqrt {
