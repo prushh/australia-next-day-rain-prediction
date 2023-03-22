@@ -19,30 +19,41 @@ In our project we implemented two common impurity measures:
 * Weighted Gini Impurity
 * Entropy Information Gain
 
-Both of them were implemented with and without the use of the **Map Reduce paradigm**, where the measures for each label of the dataset are computed in parallel, and subsequently summed to obtain the final value.
+#### MapReduce implementation
+Our algorithm was also implemented with the use of the **Map Reduce paradigm**, where the measures for each label of the dataset are computed in parallel, and subsequently summed to obtain the final value.
 
 ### Random Forest
 The **Random Forest** ensemble learning method for classification operates by constructing a multitude of decision trees at training time and outputting the class that is the mode of the classes of the individual trees.
 
 During training, the algorithm selects a random subset of features at each split in the decision tree, rather than using all features like traditional decision trees. This process helps to reduce the correlation between the individual trees in the forest and reduces overfitting.
 
-Our implementation of the Random Forest classification algorithm relies on our implementation of the Decision Tree, which, can utilize or not the **Map Reduce paradigm** for the calculation of the impurity measure.
+#### MapReduce implementation
+Our implementation of the Random Forest classification algorithm relies on our implementation of the Decision Tree, which, can utilize the **Map Reduce paradigm** for the calculation of the impurity measure.
 
 ### Gradient Boosting
 The **Gradient Boosting** algorithm works by combining multiple weak learners  to form a strong learner.
 
 At each iteration, the algorithm computes the negative gradients of the current predictions using the Mean Squared Error loss function, and trains a new Decision Tree on the residuals of the current predictions. The new tree is then added to the ensemble, and the weights of the data points are updated based on the predictions of the current ensemble. 
 
-
-
-Our implementation of the Gradient Boosting classification algorithm relies on our implementation of the Decision Tree, which, can utilize or not the **Map Reduce paradigm** for the calculation of the impurity measure.
+#### MapReduce implementation
+Our implementation of the Gradient Boosting classification algorithm relies on our implementation of the Decision Tree, which, can utilize the **Map Reduce paradigm** for the calculation of the impurity measure.
 
 ### KNN
+The **KNN** algorithm classifies new data points by calculating the distance between it and all the data points in the training set. 
+It then selects the k-nearest data points based on their distance and assigns the class label of the majority of these neighbors to the new data point. 
+
+#### MapReduce implementation
 
 ## Dataset
 We choose to test our classifiers with a dataset about [weather observations in Australia](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package) that covers 10 years and has 22 features for predicting the target column *RainTomorrow*.
 
 We did a number of operations to pre-process it before running it with our algorithms, they can be found in the `preprocessing.py` script.
+
+## Testing
+In order to evaluate the validity of our classification algorithm implementations utilizing  the MapReduce paradigm, 
+we have decided to compare their performance and accuracy in predicting the labels of the dataset mentioned earlier, with that of the same algorithms implemented *without* the paradigm and the ones by [Spark's MLlib library](https://spark.apache.org/mllib/).
+
+### Results
 
 ## Running in Google Cloud Platform
 To test the algorithms, here are a series of gcloud shell commands to run in **Google Cloud Platform**.
@@ -72,3 +83,8 @@ Then you need to upload the dataset.
 ```bash
 gcloud dataproc jobs submit spark --region=europe-west1 --cluster=mycluster --class=it.unibo.andrp.Main --jars=gs://bucket-weather-australian/australia-next-day-rain-prediction_3-0.1.0-SNAPSHOT.jar
 ```
+
+## References
+
+1. Rain in Australia Dataset, J. Young, A. Young, [Kaggle](https://www.kaggle.com/datasets/jsphyg/weather-dataset-rattle-package)
+2. 
