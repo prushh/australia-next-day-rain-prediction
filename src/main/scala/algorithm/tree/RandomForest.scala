@@ -1,8 +1,9 @@
 package it.unibo.andrp
 package algorithm.tree
 
-import algorithm.tree.DecisionTree
+import algorithm.tree.DecisionTreeOld
 import model.DataPoint
+import config.AlgorithmConfig
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -10,10 +11,10 @@ import shaded.parquet.it.unimi.dsi.fastutil.longs.LongLists.EmptyList
 
 import scala.util.Random
 
-class RandomForest(numTrees: Int, maxDepth: Int, par : Boolean = false) {
+class RandomForest(par : Boolean = false) {
 
-  private val trees: List[DecisionTree] =
-    List.fill(numTrees)(new DecisionTree(maxDepth, featureSubsetStrategy="sqrt", par = par))
+  private val trees: List[DecisionTreeOld] =
+    List.fill(AlgorithmConfig.RandomForest.NUM_TREES)(new DecisionTreeOld(par = par))
 
   def train(data: RDD[DataPoint]): Unit = {
     trees.foreach(tree => {
@@ -36,11 +37,6 @@ class RandomForest(numTrees: Int, maxDepth: Int, par : Boolean = false) {
   }
 
 }
-
-/*object RandomForest {
-  def apply(numTrees: Int, maxDepth: Int): RandomForest =
-    new RandomForest(numTrees, maxDepth)
-}*/
 
 
 

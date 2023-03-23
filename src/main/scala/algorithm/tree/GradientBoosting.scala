@@ -19,7 +19,7 @@ class GradientBoosting(
                         val par: Boolean = false
                       ) {
 
-  var trees: ArrayBuffer[DecisionTree] = ArrayBuffer.empty[DecisionTree]
+  var trees: ArrayBuffer[DecisionTreeOld] = ArrayBuffer.empty[DecisionTreeOld]
 
   def train(
              data: RDD[DataPoint]
@@ -31,7 +31,7 @@ class GradientBoosting(
 
     for (_ <- 0 until numIterations) {
 
-      val tree = new DecisionTree(
+      val tree = new DecisionTreeOld(
         maxDepth = maxDepth,
         minSplitSize = minSplitSize,
         featureSubsetStrategy = featureSubsetStrategy,

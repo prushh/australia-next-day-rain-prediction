@@ -1,8 +1,8 @@
 package it.unibo.andrp
 package SparkAlgorithm
 
+import model.DataPoint
 
-import it.unibo.andrp.model.DataPoint
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.mllib.tree.DecisionTree

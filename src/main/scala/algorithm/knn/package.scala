@@ -40,7 +40,7 @@ package object knn {
 
         val totalPredictions = testData.length
         val accuracy = correctPredictions.toDouble / totalPredictions.toDouble
-        println(s"[kNN] - accuracy: $accuracy")
+        println(s"[knn] - accuracy: $accuracy")
     }
 
     private def _classify(trainData: RDD[DataPoint], testPoint: DataPoint, k: Int, distance: DistanceFunc): Double = {

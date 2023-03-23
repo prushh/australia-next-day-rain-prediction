@@ -2,7 +2,8 @@ package it.unibo.andrp
 package SparkAlgorithm
 
 
-import it.unibo.andrp.model.DataPoint
+import model.DataPoint
+
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 import org.apache.spark.ml.PipelineModel
@@ -11,7 +12,6 @@ import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
 import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier, GBTClassificationModel, GBTClassifier, RandomForestClassificationModel, RandomForestClassifier}
 import org.apache.spark.ml.linalg.Vector
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 
 abstract class MLAIalgorithms {
 

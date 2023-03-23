@@ -7,7 +7,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 
 package object dataset {
-    def getDataPoints(csvDataset: DataFrame): (RDD[DataPoint], Seq[DataPoint]) = {
+    def getDataPoints(csvDataset: DataFrame): (RDD[DataPoint], RDD[DataPoint]) = {
         val rddDataset = csvDataset.rdd.map(_fromDataFrameRowToRDD)
         splitData(rddDataset, AlgorithmConfig.TRAINING_RATIO, AlgorithmConfig.SEED)
     }
@@ -18,8 +18,8 @@ package object dataset {
         DataPoint(features, label)
     }
 
-    private def splitData(data: RDD[DataPoint], trainingRatio: Double, seed: Long): (RDD[DataPoint], Seq[DataPoint]) = {
+    private def splitData(data: RDD[DataPoint], trainingRatio: Double, seed: Long): (RDD[DataPoint], RDD[DataPoint]) = {
         val splits = data.randomSplit(Array(trainingRatio, 1.0 - trainingRatio), seed)
-        (splits(0), splits(1).collect())
+        (splits(0), splits(1))
     }
 }
