@@ -1,7 +1,7 @@
 package it.unibo.andrp
 package algorithm.tree
 
-import it.unibo.andrp.model.DataPoint
+import model.DataPoint
 import model.Feature
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

@@ -7,7 +7,7 @@ object Impurities extends Enumeration {
     val Gini, Entropy = Value
 
     def gini(labels: Seq[Double], weights: Seq[Double]): Double = {
-        val weightedCounts = (labels zip weights).groupBy(_._1).view.mapValues {
+        val weightedCounts = (labels zip weights).groupBy(_._1).mapValues {
             _.map(_._2).sum
         }
         val totalWeight = weights.sum
@@ -20,7 +20,7 @@ object Impurities extends Enumeration {
 
     def entropy(labels: Seq[Double], weights: Seq[Double]): Double = {
         val totalWeight = weights.sum
-        val probabilities = labels.groupBy(identity).view.mapValues {
+        val probabilities = labels.groupBy(identity).mapValues {
             _.size.toDouble / labels.size
         }
 

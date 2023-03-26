@@ -5,9 +5,8 @@ import model.DataPoint
 import config.AlgorithmConfig
 import algorithm.knn.Distances.DistanceFunc
 
-import org.apache.spark.{RangePartitioner, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row}
 
 package object knn {
   def classify(sparkContext: SparkContext)(trainData: RDD[DataPoint], testData: Seq[DataPoint], par: Boolean = true): Unit = {
@@ -68,7 +67,7 @@ package object knn {
     // Get only labels
     val labels = kNearestNeighbors map (_._1)
     // Count occurrences for each label value
-    val labelCounts = (labels groupBy identity).view.mapValues(_.length)
+    val labelCounts = (labels groupBy identity).mapValues(_.length)
     // Get label with the highest count
     labelCounts.maxBy(_._2)._1
   }
@@ -85,7 +84,7 @@ package object knn {
     // Get only labels
     val labels = kNearestNeighbors map (_._1)
     // Count occurrences for each label value
-    val labelCounts = (labels groupBy identity).view.mapValues(_.length)
+    val labelCounts = (labels groupBy identity).mapValues(_.length)
     // Get label with the highest count
     labelCounts.maxBy(_._2)._1
   }
