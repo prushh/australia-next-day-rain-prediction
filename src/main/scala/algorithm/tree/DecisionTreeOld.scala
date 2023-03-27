@@ -141,12 +141,13 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
                                 ): (Int, Double, Double) = {
     val features = generateFeatures(data.collect().toList)
     val dataSeq = data.collect.toSeq
-
+    // viene costruito un RDD costituito dall'indice della feature come chiave e il valore rispettivo della feature per il sample
     val featureValuesRDD = data.flatMap { dp =>
       features.map { feature =>
         (feature.id, dp.features(feature.id))
       }
     }
+    // Dall'RDD delle feature precedentemente generato vengono raggruppate le chiavi in modo da avere dei vettori come valori in modo da poter cercare la miglior threeshold
     val impurityReductionsRDD = featureValuesRDD.groupByKey().flatMap { case (featureId, values) =>
 
       values.toArray.sorted.distinct.sliding(2).map {
@@ -157,33 +158,13 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
           (featureId, v1, 0.0)
       }
     }
+
+    //viene effettuata la collect per poter tornare al driver tutte le computazioni effettuate in maniera distribuita e si seleziona la feature con l'impurity gain maggiore
     val res = impurityReductionsRDD.collect().maxBy(_._3)
     res
   }
 
-  def selectBestFeatureMapReduce2(data: RDD[DataPoint], features: Seq[Feature], weights: Seq[Double], impurityFunc: (Seq[Double], Seq[Double]) => Double
-                                 ):
-  (Int, Double, Double) = {
 
-    val featureValuesRDD = data.flatMap { dp =>
-      features.map { feature =>
-        (feature.id, dp.features(feature.id))
-      }
-    }
-    val dataSeq = data.collect.toSeq
-    val impurityReductionsRDD = featureValuesRDD.groupByKey().flatMap { case (featureId, values) =>
-
-      values.toArray.sorted.distinct.sliding(2).map {
-        case Array(v1, v2) =>
-          val threshold = (v1 + v2) / 2
-          (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
-        case Array(v1) =>
-          (featureId, v1, 0.0)
-      }
-    }
-    val res = impurityReductionsRDD.collect().maxBy(_._3)
-    res
-  }
 
   def generateFeatures(data: List[DataPoint]): List[Feature] = {
     val numFeatures = data.head.features.length
