@@ -9,7 +9,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 package object knn {
-  def classify(sparkContext: SparkContext)(trainData: RDD[DataPoint], testData: Seq[DataPoint], par: Boolean = true): Unit = {
+  def classify(sparkContext: SparkContext)(trainData: RDD[DataPoint], testData: Seq[DataPoint], par: Boolean = true): Double = {
     // Choose distance function
     val distance: DistanceFunc = AlgorithmConfig.Knn.DISTANCE_METHOD match {
       case Distances.Euclidean => Distances.euclidean
@@ -52,7 +52,9 @@ package object knn {
 
     val totalPredictions = testData.length
     val accuracy = correctPredictions.toDouble / totalPredictions.toDouble
+
     println(s"[knn] - accuracy: $accuracy")
+    accuracy
   }
 
   private def _classify(trainData: RDD[DataPoint], testPoint: DataPoint, k: Int, distance: DistanceFunc): Double = {

@@ -16,7 +16,7 @@ class DecisionTreeS extends MLAIalgorithms {
   override def fit(trainData: RDD[DataPoint]): Unit = {
     val labeledPointData = trainData.map(dp => LabeledPoint(dp.label, Vectors.dense(dp.features.toArray)))
 
-    def mapCategoricalFeaturesInfo: Map[Int, Int] = (13 to 60).map(x => (x, 2)).toMap
+    def mapCategoricalFeaturesInfo: Map[Int, Int] = Map(1 -> 2).toMap
     // Train the Decision Tree model
     val dt = DecisionTree.trainClassifier(labeledPointData, 2, mapCategoricalFeaturesInfo, "gini", 5, 32)
 

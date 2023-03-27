@@ -5,6 +5,7 @@ import algorithm.tree.DecisionTreeOld
 import model.DataPoint
 import config.AlgorithmConfig
 
+import it.unibo.andrp.config.AlgorithmConfig.RandomForest.NUM_TREES
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import shaded.parquet.it.unimi.dsi.fastutil.longs.LongLists.EmptyList
@@ -14,11 +15,13 @@ import scala.util.Random
 class RandomForest(par : Boolean = false) {
 
   private val trees: List[DecisionTreeOld] =
-    List.fill(AlgorithmConfig.RandomForest.NUM_TREES)(new DecisionTreeOld(par = par))
+    List.fill(NUM_TREES)(new DecisionTreeOld(par = par, featureSubsetStrategy = "sqrt"))
 
   def train(data: RDD[DataPoint]): Unit = {
-    trees.foreach(tree => {
-      tree.train(data,None)
+    trees.par.map(tree => {
+      val subsampledRDD = data.sample(withReplacement = true, 1)
+      tree.train(subsampledRDD,None)
+      tree
     })
   }
 

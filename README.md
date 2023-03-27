@@ -1,13 +1,13 @@
 # australia-next-day-rain-prediction
 <p>
-  <img src="https://img.shields.io/badge/Scala-3.2.1-red" alt="alternatetext">
-  <img src="https://img.shields.io/badge/Spark-3.2.1-orange" alt="alternatetext">
-  <img src="https://img.shields.io/badge/jdk-17.0.5-green" alt="alternatetext">
+  <img src="https://img.shields.io/badge/Scala-2.12.15-red" alt="alternatetext">
+  <img src="https://img.shields.io/badge/Spark-3.3.2-orange" alt="alternatetext">
+  <img src="https://img.shields.io/badge/jdk-11.0.18-green" alt="alternatetext">
+<img src="https://img.shields.io/badge/sbt-1.7.3-blue" alt="alternatetext">
+
 </p>
 
-This is a project for the 21/22 *Scalable and Cloud Programming* course of the University of Bologna.
-
-This project gives an implementation of a series of popular classification algorithms using the Scala language and the MapReduce paradigm.
+Project for the course "Scalable and Cloud Programming" of the University of Bologna, A.Y. 2021/2022. This project gives an implementation of a series of popular classification algorithms using the Scala language and the MapReduce paradigm.
 
 ## Classifiers
 ### Decision Tree
@@ -30,13 +30,6 @@ During training, the algorithm selects a random subset of features at each split
 #### MapReduce implementation
 Our implementation of the Random Forest classification algorithm relies on our implementation of the Decision Tree, which, can utilize the **Map Reduce paradigm** for the calculation of the impurity measure.
 
-### Gradient Boosting
-The **Gradient Boosting** algorithm works by combining multiple weak learners  to form a strong learner.
-
-At each iteration, the algorithm computes the negative gradients of the current predictions using the Mean Squared Error loss function, and trains a new Decision Tree on the residuals of the current predictions. The new tree is then added to the ensemble, and the weights of the data points are updated based on the predictions of the current ensemble. 
-
-#### MapReduce implementation
-Our implementation of the Gradient Boosting classification algorithm relies on our implementation of the Decision Tree, which, can utilize the **Map Reduce paradigm** for the calculation of the impurity measure.
 
 ### KNN
 The **KNN** algorithm classifies new data points by calculating the distance between it and all the data points in the training set. 
@@ -63,25 +56,28 @@ gcloud auth login
 ### Creating a bucket in Cloud Storage
 Before running the following command, enable **Cloud Storage** as a service in your GCP Project.
 ```bash
+gcloud storage buckets create gs://$BUCKET_NAME
 ```
 
 ### Creating a cluster in Dataproc
 Before running the following command, enable **Dataproc** as a service in your GCP Project.
 ```bash
-gcloud dataproc clusters create my-dataproc-cluster --region=europe-west1  --num-workers=2 --worker-machine-type=n1-standard-2 --image-version=2.1-debian11
+gcloud dataproc clusters create $CLUSTER_NAME --region=$REGION  --num-workers=$NUM_WORKER --worker-machine-type=$WORKER_MACHINE_TYPE --image-version=$IMAGE_VERSION
 ```
 
 ### Uploading data in the bucket
 First you need to upload the JAR of the project.
 ```bash
+gsutil cp target/scala-2.12/andrp.jar gs://$BUCKET_NAME/andrp.jar
 ```
 Then you need to upload the dataset.
 ```bash
+gsutil cp data/weatherAUS-reduced.csv gs://$BUCKET_NAME/weatherAUS-reduced.csv
 ```
 
 ### Submitting a job in Dataproc
 ```bash
-gcloud dataproc jobs submit spark --region=europe-west1 --cluster=mycluster --class=it.unibo.andrp.Main --jars=gs://bucket-weather-australian/australia-next-day-rain-prediction_3-0.1.0-SNAPSHOT.jar
+gcloud dataproc jobs submit spark --region=$REGION --cluster=$CLUSTER_NAME 
 ```
 
 ## References

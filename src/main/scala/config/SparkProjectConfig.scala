@@ -22,6 +22,7 @@ object SparkProjectConfig {
         DEFAULT_PARALLELISM = parallel
         session.sparkContext.setLogLevel("WARN")
 
+
         session
     }
 }

@@ -24,7 +24,7 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     }
   }
 
-  private def getImpurityMeasure(): ((Seq[Double], Seq[Double]) => Double) = {
+  private def getImpurityMeasure: (Seq[Double], Seq[Double]) => Double = {
     if (par) {
       impurityMeasure match {
         case "gini" => giniWeightedImpurity
@@ -40,7 +40,7 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     }
   }
 
-  private def getSelectorFeatures():
+  private def getSelectorFeatures:
   (RDD[DataPoint], Seq[Double], (Seq[Double], Seq[Double]) => Double) => (Int, Double, Double) = {
     if (par) {
       selectBestFeatureMapReduce
@@ -64,11 +64,11 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     //weights intialization if there's no weight vector
     val w = weights match {
       case Some(x) => x
-      case None => List.fill(data.collect().size)(1.0)
+      case None => List.fill(data.collect().length)(1.0)
     }
 
-    val impurityFunc = getImpurityMeasure()
-    root = Some(buildDecisionTree(data, w, impurityFunc, maxDepth, minSplitSize))
+    val impurityFunc = getImpurityMeasure
+    root = Some(buildDecisionTree(data_filtered, w, impurityFunc, maxDepth, minSplitSize))
   }
 
   def predict(dataPoint: DataPoint): Double = {
@@ -85,12 +85,13 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
                         maxDepth: Int,
                         minSplitSize: Int
                        ): Node = {
-    val findFeatures = getSelectorFeatures()
+    val findFeatures = getSelectorFeatures
     val labels = data.collect().map(_.label.toInt)
-    if (maxDepth == 0 || labels.size < minSplitSize) {
+    if (maxDepth == 0 || labels.length < minSplitSize) {
       Leaf(getMajorityWeighted(labels, weights))
     } else {
-      val (bestFeature, bestSplits, bestGain) = selectBestFeatureMapReduce2(data, generateFeatures(data.collect().toList), weights, impurityFunc)
+      //val ((bestFeature, bestSplits, bestGain), timeIn) = time("pippo", getSelectorFeatures()(data, weights, impurityFunc))
+      val (bestFeature, bestSplits, bestGain) = findFeatures(data, weights, impurityFunc)
       if (bestGain == 0.0) {
         Leaf(getMajorityWeighted(labels, weights))
       } else {
@@ -119,11 +120,11 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
 
     for (((values, label), weight) <- data.map(_.features).zip(data.map(_.label)).zip(weights)) {
       if (values(feature) < split) {
-        leftData += DataPoint(values, label)
+        leftData += DataPoint(values.take(feature) ++ values.drop(feature + 1), label)
         leftLabels += label
         leftWeights += weight
       } else {
-        rightData += DataPoint(values, label)
+        rightData += DataPoint(values.take(feature) ++ values.drop(feature + 1), label)
         rightLabels += label
         rightWeights += weight
       }
@@ -139,30 +140,29 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
                                   impurityFunc: (Seq[Double], Seq[Double]) => Double
                                 ): (Int, Double, Double) = {
     val features = generateFeatures(data.collect().toList)
+    val dataSeq = data.collect.toSeq
+
     val featureValuesRDD = data.flatMap { dp =>
       features.map { feature =>
         (feature.id, dp.features(feature.id))
       }
     }
-    val dataSeq = data.collect.toSeq
     val impurityReductionsRDD = featureValuesRDD.groupByKey().flatMap { case (featureId, values) =>
 
-      values.toArray.sorted.distinct.sliding(2).map { case Array(v1, v2) => {
-        val threshold = (v1 + v2) / 2
-        (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
-      }
-      case Array(v1) => {
-        (featureId, v1, 0.0)
-      }
+      values.toArray.sorted.distinct.sliding(2).map {
+        case Array(v1, v2) =>
+          val threshold = (v1 + v2) / 2
+          (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
+        case Array(v1) =>
+          (featureId, v1, 0.0)
       }
     }
-    println(impurityReductionsRDD.collect().length)
     val res = impurityReductionsRDD.collect().maxBy(_._3)
     res
   }
 
   def selectBestFeatureMapReduce2(data: RDD[DataPoint], features: Seq[Feature], weights: Seq[Double], impurityFunc: (Seq[Double], Seq[Double]) => Double
-                                ):
+                                 ):
   (Int, Double, Double) = {
 
     val featureValuesRDD = data.flatMap { dp =>
@@ -173,13 +173,12 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     val dataSeq = data.collect.toSeq
     val impurityReductionsRDD = featureValuesRDD.groupByKey().flatMap { case (featureId, values) =>
 
-      values.toArray.sorted.distinct.sliding(2).map { case Array(v1, v2) => {
-        val threshold = (v1 + v2) / 2
-        (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
-      }
-      case Array(v1) => {
-        (featureId, v1, 0.0)
-      }
+      values.toArray.sorted.distinct.sliding(2).map {
+        case Array(v1, v2) =>
+          val threshold = (v1 + v2) / 2
+          (featureId, threshold, calculateImpurityReduction(dataSeq, features(featureId), weights, threshold, impurityFunc))
+        case Array(v1) =>
+          (featureId, v1, 0.0)
       }
     }
     val res = impurityReductionsRDD.collect().maxBy(_._3)
@@ -224,7 +223,7 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     var bestSplit = Double.MinValue
     var bestGain = Double.MinValue
 
-    for (((value, label), weight) <- data.dropRight(1)) {
+    for (((value, _), weight) <- data.dropRight(1)) {
       leftWeight += weight
       leftCount += 1
       rightWeight -= weight
@@ -340,7 +339,7 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
 
   def getMajorityWeighted(labels: Seq[Int], weights: Seq[Double]): Int = {
     val labelWeights = labels.zip(weights)
-    val labelCounts = labelWeights.groupBy(_._1).mapValues(_.map(_._2).sum).toMap
+    val labelCounts = labelWeights.groupBy(_._1).mapValues(_.map(_._2).sum)
     val (majorityLabel, _) = labelCounts.maxBy(_._2)
     majorityLabel
   }
@@ -378,7 +377,7 @@ class DecisionTreeOld(maxDepth: Int = 3, featureSubsetStrategy: String = "all", 
     // Calculate the entropy
     labelCounts.values.map(count => {
       val proportion = count / totalCount
-      (- proportion) * math.log(proportion) / math.log(2)
+      (-proportion) * math.log(proportion) / math.log(2)
     }).sum()
   }
 
