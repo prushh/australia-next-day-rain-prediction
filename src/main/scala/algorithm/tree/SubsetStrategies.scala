@@ -4,6 +4,8 @@ package algorithm.tree
 import scala.util.Random
 
 object SubsetStrategies extends Enumeration {
+    type SubsetStrategy = Value
+
     val All, Sqrt, Log2 = Value
 
     def all(features: Seq[Int]): Seq[Int] =

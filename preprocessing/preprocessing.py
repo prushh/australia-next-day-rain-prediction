@@ -27,7 +27,7 @@ def construct_line(label, line):
 def main():
     cwd = os.getcwd()
     data_dir = os.path.join(cwd, '..', 'data')
-    input_filepath = os.path.join(data_dir, 'weatherAUS-original.csv')
+    input_filepath = os.path.join(data_dir, 'weatherAUS.csv')
     output_filepath = os.path.join(data_dir, 'weatherAUS-final.csv')
 
     raw = pd.read_csv(input_filepath)

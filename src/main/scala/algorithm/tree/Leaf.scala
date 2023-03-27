@@ -3,6 +3,6 @@ package algorithm.tree
 
 import model.DataPoint
 
-case class Leaf(label: Int) extends Node {
-    def predict(dataPoint: DataPoint): Int = label
+case class Leaf(label: Double) extends Node {
+    def predict(dataPoint: DataPoint): Double = label
 }

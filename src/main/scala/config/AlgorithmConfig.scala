@@ -11,17 +11,18 @@ object AlgorithmConfig {
 
     object Knn {
         val NUMBER_NEAREST_NEIGHBORS = 3
-        val DISTANCE_METHOD = Distances.Euclidean
+        val DISTANCE_METHOD: Distances.Value = Distances.Euclidean
     }
 
     object DecisionTree {
-        val MAX_DEPTH = 4
-        val IMPURITY_MEASURE = Impurities.Gini
+        val MAX_DEPTH = 3
+        val IMPURITY_MEASURE: Impurities.Value = Impurities.Gini
         val MIN_SPLIT_SIZE = 5
-        val SUBSET_STRATEGY = SubsetStrategies.All
+        val SUBSET_STRATEGY: SubsetStrategies.Value = SubsetStrategies.All
     }
     
     object RandomForest {
         val NUM_TREES = 5
+        val SUBSET_STRATEGY: SubsetStrategies.Value = SubsetStrategies.Sqrt
     }
 }
