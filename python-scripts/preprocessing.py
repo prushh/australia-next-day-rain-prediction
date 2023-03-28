@@ -1,10 +1,16 @@
+import warnings
+
+warnings.filterwarnings("ignore")
+
 import csv
 import argparse
 import os
 
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import Normalizer
+import seaborn as sns
+from imblearn.over_sampling import SMOTE
+from sklearn.preprocessing import Normalizer, LabelEncoder
 from imblearn.under_sampling import RandomUnderSampler
 
 
@@ -32,6 +38,54 @@ def main():
 
     raw = pd.read_csv(input_filepath)
 
+    if args.reduce:
+        # Source: https://www.kaggle.com/code/rocklen/rain-in-australia/notebook
+        print("Preprocessing...")
+        raw.isnull().sum() / len(raw) * 100
+        raw.fillna(raw.mean(), inplace=True)
+        raw.isnull().sum() / len(raw) * 100
+
+        raw['WindGustDir'] = raw['WindGustDir'].fillna(raw['WindGustDir'].mode()[0])
+        raw['WindDir9am'] = raw['WindDir9am'].fillna(raw['WindDir9am'].mode()[0])
+        raw['WindDir3pm'] = raw['WindDir3pm'].fillna(raw['WindDir3pm'].mode()[0])
+        raw['RainToday'] = raw['RainToday'].fillna(raw['RainToday'].mode()[0])
+        raw['RainTomorrow'] = raw['RainTomorrow'].fillna(raw['RainTomorrow'].mode()[0])
+
+        la = LabelEncoder()
+        l = []
+        for i in raw.columns:
+            if raw.dtypes[i] == 'O':
+                l.append(i)
+        for i in l:
+            raw[i] = la.fit_transform(raw[i])
+
+        # Separating related and unrelated columns
+        cor = raw.corr()
+        # plt.figure(figsize=(20, 12))
+        sns.heatmap(cor, annot=True)
+
+        related = cor['RainTomorrow'].sort_values(ascending=False)
+        x = []
+        for i in range(len(related)):
+            if related[i] > 0:
+                x.append(related.index[i])
+
+        x = raw[x]
+        x.drop('RainTomorrow', inplace=True, axis=1)
+        y = raw['RainTomorrow']
+
+        # Balancing
+        print("Balancing...")
+        bal = SMOTE()
+        x, y = bal.fit_resample(x, y)
+
+        x['RainTomorrow'] = y
+
+        output_filepath = os.path.join(data_dir, 'weatherAUS-reduced.csv')
+        x.to_csv(output_filepath, index=False)
+        print(f'Exported reduced dataset [CSV]: {os.path.basename(output_filepath)}')
+        return 0
+
     target_col = 'RainTomorrow'
     categorical_cols = ['WindGustDir', 'WindDir9am', 'WindDir3pm', 'RainToday']
     many_missing_cols = ['Date', 'Location', 'Cloud9am', 'Cloud3pm', 'Evaporation', 'Sunshine']
@@ -52,7 +106,6 @@ def main():
         columns = final.columns
         y = final[target_col].to_numpy().astype('int32')
         X = final.iloc[:, final.columns != target_col]
-        # TODO: review type of balancing
         under_sampler = RandomUnderSampler(random_state=42)
         X_res, y_res = under_sampler.fit_resample(X, y)
         y_res = y_res.reshape(-1, 1)
@@ -101,14 +154,17 @@ def main():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Preprocessing weatherAUS dataset',
-        usage='%(prog)s [--normalize] [--libsvm]'
+        usage='%(prog)s [--reduce] | [--normalize] [--libsvm] [--balancing]'
     )
 
+    parser.add_argument(
+        '-r', '--reduce', action='store_true',
+        help='save dataset with reduced number of features according to some correlation metrics'
+    )
     parser.add_argument(
         '-n', '--normalize', action='store_true',
         help='apply normalization to the dataset'
     )
-
     parser.add_argument(
         '-l', '--libsvm', action='store_true',
         help='create .data file with LIBSVM format'
@@ -119,4 +175,8 @@ if __name__ == '__main__':
     )
 
     args = parser.parse_args()
+
+    if args.reduce and (args.normalize or args.libsvm or args.balancing):
+        parser.error('specify --reduce lonely without other args')
+
     exit(main())
