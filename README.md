@@ -167,15 +167,15 @@ The meaning of the unexplained variables is the following:
 ### Download the results
 
 ```bash
-gsutil -m cp -r "gs://bucket-weather-australian/$OUTPUT_FILE python_scripts/results/.
+gsutil -m cp -r gs://bucket-weather-australian/$OUTPUT_FILE python_scripts/results/.
 ```
 
 ## Results
 
 A separate Python script was developed to analyze the results. This script computes the averages and confidence intervals of the output metrics, and generates plots to illustrate the findings.
 
-![kNN plot](./python-scripts/results/images/decisiontree.png)
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
-![kNN plot](./python-scripts/results/images/randomforest.png)
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/randomforest.png" alt="Random Forest plot" width="500" />
 
-![kNN plot](./python-scripts/results/images/knn.png)
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/knn.png" alt="kNN plot" width="500" />
