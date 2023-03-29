@@ -38,7 +38,7 @@ In our implementation of the algorithm various hyper-parameters were included li
 
 The configuration used for both the algorithm within Spark and the one proposed is as follows:
 
-* `MAX_DEPTH = 3`;
+* `MAX_DEPTH = 3`
 * `IMPURITY_MEASURE = Impurities.Gini`
 * `MIN_SPLIT_SIZE = 5`
 * `SUBSET_STRATEGY = SubsetStrategies.All`
