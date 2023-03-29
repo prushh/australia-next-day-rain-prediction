@@ -19,7 +19,6 @@ object Main extends App {
     private var execution = Executions.Sequential
     private var outputPath = ""
     private var numRun = 0
-    private var label = ""
 
     if (!simulation) {
         classifier = args(4)
@@ -27,7 +26,6 @@ object Main extends App {
     } else {
         outputPath = args(4)
         numRun = args(5).toInt
-        label = args(6)
     }
 
     println("Configuration:")
@@ -39,14 +37,13 @@ object Main extends App {
     } else {
         println(s"- output path: $outputPath")
         println(s"- num run: $numRun")
-        println(s"- label used: $label")
     }
 
     /*
      * Loading Spark and Hadoop.
      */
     private val sparkSession = SparkProjectConfig.sparkSession(master)
-    private val outputWriter = new OutputWriter(sparkSession, outputPath, label)
+    private val outputWriter = new OutputWriter(sparkSession, outputPath)
 
     /*
      * Loading the dataset.

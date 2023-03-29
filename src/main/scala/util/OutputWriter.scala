@@ -4,7 +4,7 @@ package util
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
 
-class OutputWriter(sparkSession: SparkSession, path: String, label: String) {
+class OutputWriter(sparkSession: SparkSession, outputPath: String) {
 
     import sparkSession.implicits._
 
@@ -16,7 +16,6 @@ class OutputWriter(sparkSession: SparkSession, path: String, label: String) {
     }
 
     def saveToFile(): Unit = {
-        val outputPath = s"$path/run_p${label}"
         val dfSingleFile = df.coalesce(1)
         dfSingleFile.write.mode(SaveMode.Overwrite).option("header", value = true).csv(outputPath)
     }
