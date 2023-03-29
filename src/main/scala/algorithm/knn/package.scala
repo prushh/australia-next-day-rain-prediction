@@ -22,8 +22,8 @@ package object knn {
             case Executions.Sequential =>
                 predictions = testData.map {
                     testPoint =>
-                        _classify(
-                            trainData,
+                        _classifySeq(
+                            trainData.collect(),
                             testPoint,
                             AlgorithmConfig.Knn.NUMBER_NEAREST_NEIGHBORS,
                             distance
@@ -32,8 +32,8 @@ package object knn {
             case Executions.Parallel =>
                 predictions = testData.map {
                     testPoint =>
-                        _classifySeq(
-                            trainData.collect(),
+                        _classify(
+                            trainData,
                             testPoint,
                             AlgorithmConfig.Knn.NUMBER_NEAREST_NEIGHBORS,
                             distance
