@@ -4,8 +4,8 @@ package algorithm
 import algorithm.Executions.Execution
 import algorithm.tree.Impurities.ImpurityFunc
 import algorithm.tree.SubsetStrategies.SubsetStrategy
-import model.{DataPoint, Feature}
 import config.AlgorithmConfig
+import model.{DataPoint, Feature}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD

@@ -7,6 +7,7 @@ object Distances extends Enumeration {
     type DistanceFunc = (DataPoint, DataPoint) => Double
 
     val Euclidean, Manhattan = Value
+
     def euclidean(a: DataPoint, b: DataPoint): Double = {
         math.sqrt {
             (a.features zip b.features).map {

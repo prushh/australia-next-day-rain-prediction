@@ -3,7 +3,7 @@ package algorithm.tree
 
 object Impurities extends Enumeration {
     type ImpurityFunc = (Seq[Double], Seq[Double]) => Double
-    
+
     val Gini, Entropy = Value
 
     def gini(labels: Seq[Double], weights: Seq[Double]): Double = {

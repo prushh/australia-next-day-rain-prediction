@@ -1,9 +1,9 @@
 package it.unibo.andrp
 
+import algorithm.Executions
+import algorithm.spark.{DecisionTree, RandomForest}
 import config.SparkProjectConfig
 import dataset.getDataPoints
-import algorithm.spark.{DecisionTree, RandomForest}
-import algorithm.Executions
 import util.OutputWriter
 
 object Main extends App {

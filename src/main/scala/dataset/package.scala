@@ -1,7 +1,7 @@
 package it.unibo.andrp
 
-import model.DataPoint
 import config.AlgorithmConfig
+import model.DataPoint
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}

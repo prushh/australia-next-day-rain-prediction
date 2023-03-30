@@ -20,7 +20,7 @@ object AlgorithmConfig {
         val MIN_SPLIT_SIZE = 5
         val SUBSET_STRATEGY: SubsetStrategies.Value = SubsetStrategies.All
     }
-    
+
     object RandomForest {
         val NUM_TREES = 5
         val SUBSET_STRATEGY: SubsetStrategies.Value = SubsetStrategies.Sqrt

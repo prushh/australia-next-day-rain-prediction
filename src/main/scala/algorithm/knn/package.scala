@@ -1,10 +1,10 @@
 package it.unibo.andrp
 package algorithm
 
-import model.DataPoint
-import config.AlgorithmConfig
-import algorithm.knn.Distances.DistanceFunc
 import algorithm.Executions.Execution
+import algorithm.knn.Distances.DistanceFunc
+import config.AlgorithmConfig
+import model.DataPoint
 
 import org.apache.spark.rdd.RDD
 
