@@ -4,5 +4,5 @@ package algorithm
 object Executions extends Enumeration {
     type Execution = Value
 
-    val Sequential, Parallel = Value
+    val Sequential, Distributed = Value
 }

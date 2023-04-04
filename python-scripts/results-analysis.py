@@ -33,51 +33,66 @@ def mu_confidence_interval(data: np.ndarray, metric: str) -> Dict:
 
 
 def main():
+    str_error = "Error: copy results inside strong/weak directory with pattern experiment_procN_workN_samples.csv (e.g. strong_processors4_worker1_10000.csv)"
+
     cwd = os.getcwd()
     results_dir = os.path.join(cwd, 'results')
-    output_filename = 'merged_results.csv'
-    output_filepath = os.path.join(results_dir, output_filename)
+
+    if not os.path.exists(results_dir):
+        os.mkdir(results_dir)
+
+    # Specify strong or weak based on experiment
+    test_type = 'strong'
+    test_dir = os.path.join(results_dir, test_type)
+    images_dir = os.path.join(test_dir, 'images')
+    if not os.path.exists(test_dir):
+        os.mkdir(test_dir)
+        if not os.path.exists(images_dir):
+            os.mkdir(images_dir)
+            print(str_error)
+            return 1
 
     df_results = pd.DataFrame()
 
-    filenames = os.listdir(results_dir)
+    filenames = os.listdir(test_dir)
     files = [filename for filename in filenames if filename.endswith('.csv')]
 
+    if not files:
+        print(str_error)
+        return 1
+
     for filename in files:
-        if filename != output_filename:
-            filepath = os.path.join(results_dir, filename)
-            df = pd.read_csv(filepath)
-            df['Time'] = df['Time'].div(1000)
-            classifiers = df['Algorithm'].unique()
+        filepath = os.path.join(test_dir, filename)
+        df = pd.read_csv(filepath)
+        df['Time'] = df['Time'].div(1000)
+        classifiers = df['Algorithm'].unique()
 
-            for classifier in classifiers:
-                run_clf = df[df['Algorithm'] == classifier]
-                accuracy = run_clf['Accuracy'].mean()
-                time = run_clf['Time'].mean()
+        for classifier in classifiers:
+            run_clf = df[df['Algorithm'] == classifier]
+            accuracy = run_clf['Accuracy'].mean()
+            time = run_clf['Time'].mean()
 
-                (core, worker) = re.findall(r'\d+', filename)
+            (core, worker, _) = re.findall(r'\d+', filename)
 
-                row_stat = {
-                    'classifier': [classifier],
-                    'mean-accuracy': [accuracy],
-                    'mean-time': [time],
-                    'core': [int(core)],
-                    'worker': [int(worker)],
-                    'config': [filename]
-                }
+            row_stat = {
+                'classifier': [classifier],
+                'mean-accuracy': [accuracy],
+                'mean-time': [time],
+                'core': [int(core)],
+                'worker': [int(worker)],
+                'config': [filename]
+            }
 
-                ci_acc = mu_confidence_interval(run_clf['Accuracy'].to_numpy(), 'accuracy')
-                ci_time = mu_confidence_interval(run_clf['Time'].to_numpy(), 'time')
+            ci_acc = mu_confidence_interval(run_clf['Accuracy'].to_numpy(), 'accuracy')
+            ci_time = mu_confidence_interval(run_clf['Time'].to_numpy(), 'time')
 
-                row_stat.update(ci_acc)
-                row_stat.update(ci_time)
+            row_stat.update(ci_acc)
+            row_stat.update(ci_time)
 
-                df_results = pd.concat([df_results, pd.DataFrame(row_stat)], ignore_index=True)
+            df_results = pd.concat([df_results, pd.DataFrame(row_stat)], ignore_index=True)
 
-    print('Saving...')
-    df_results.to_csv(output_filepath, index=False)
-
-    print('Plotting...')
+    print('Saving plot...')
+    # classifiers = [f'{test_type.capitalize()} - {clf}' for clf in df_results['classifier'].unique()]
     classifiers = df_results['classifier'].unique()
     for classifier in classifiers:
         stats_clf = df_results[df_results['classifier'] == classifier].sort_values(by=['core'])
@@ -99,11 +114,9 @@ def main():
             zorder=1
         )
         ax.plot(stats_clf['core'], stats_clf['mean-time'], 'o', color='royalblue', zorder=2)
+        # plt.show()
 
-        images_path = os.path.join(results_dir, 'images')
-        if not os.path.exists(images_path):
-            os.mkdir(images_path)
-        plt.savefig(os.path.join(images_path, f'{classifier}'.lower()))
+        plt.savefig(os.path.join(images_dir, f'{classifier.lower()}'))
 
     return 0
 

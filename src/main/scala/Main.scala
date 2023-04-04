@@ -14,26 +14,25 @@ object Main extends App {
     private val datasetPath = args(1)
     private val simulation = if (args(2) == "sim=true") true else false
     private val limit = if (args(3) == "lim=true") 1000 else 10000
+    private val execution = if (args(4) == "ex=parallel") Executions.Distributed else Executions.Sequential
 
     private var classifier = ""
-    private var execution = Executions.Sequential
     private var outputPath = ""
     private var numRun = 0
 
     if (!simulation) {
-        classifier = args(4)
-        execution = if (args(5) == "ex=parallel") Executions.Parallel else Executions.Sequential
+        classifier = args(5)
     } else {
-        outputPath = args(4)
-        numRun = args(5).toInt
+        outputPath = args(5)
+        numRun = args(6).toInt
     }
 
     println("Configuration:")
     println(s"- master: $master")
     println(s"- dataset path: $datasetPath")
+    println(s"- execution: $execution")
     if (!simulation) {
         println(s"- classifier: $classifier")
-        println(s"- execution: $execution")
     } else {
         println(s"- output path: $outputPath")
         println(s"- num run: $numRun")

@@ -50,7 +50,7 @@ package object tree {
                         train(trainData, AlgorithmConfig.RandomForest.SUBSET_STRATEGY)(execution)
                     }
                 )
-            case Executions.Parallel =>
+            case Executions.Distributed =>
                 randomForest.getTrees.par.map(
                     _ => {
                         val subset = trainData.sample(withReplacement = true, 1)
@@ -110,7 +110,7 @@ package object tree {
                     }
 
                     (bestFeature, bestSplits, bestGain)
-                case Executions.Parallel =>
+                case Executions.Distributed =>
                     val features = _generate(trainDataArray)
 
                     val featureValues = trainData.flatMap {
@@ -238,23 +238,24 @@ package object tree {
         impurityReduction
     }
 
-    def accuracy(model: DecisionTree)(testData: Array[DataPoint]): Double = {
+    def accuracy(model: DecisionTree)(testData: Seq[DataPoint]): Double = {
         val predictions = testData.map { point =>
             _predict(model.getRoot, point)
         }
-        val correct = (predictions zip testData).count {
-            case (pred, dp) =>
-                pred == dp.label
-        }
-        correct.toDouble / testData.length.toDouble
+
+        _correct(predictions, testData)
     }
 
-    def accuracy(model: RandomForest)(testData: Array[DataPoint]): Double = {
+    def accuracy(model: RandomForest)(testData: Seq[DataPoint]): Double = {
         val predictions = testData.map {
             point => _predictRandomForest(model.getTrees, point)
         }
 
-        val correct = (predictions zip testData).count {
+        _correct(predictions, testData)
+    }
+
+    private def _correct(preds: Seq[Double], testData: Seq[DataPoint]): Double = {
+        val correct = (preds zip testData).count {
             case (pred, dp) =>
                 pred == dp.label
         }

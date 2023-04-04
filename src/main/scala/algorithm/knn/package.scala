@@ -29,7 +29,7 @@ package object knn {
                             distance
                         )
                 }
-            case Executions.Parallel =>
+            case Executions.Distributed =>
                 predictions = testData.map {
                     testPoint =>
                         _classify(

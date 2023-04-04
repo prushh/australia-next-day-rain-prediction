@@ -127,7 +127,7 @@ It is necessary to store all project files, including JAR executables and CSV da
 gcloud storage buckets create gs://$BUCKET_NAME --location $REGION
 ```
 
-`$BUCKET_NAME` and `$REGION` can be environment variables or you can just substitute them with the actual values.
+`$BUCKET_NAME` and `$REGION` can be environment variables, or you can just substitute them with the actual values.
 Regions can be found [here](https://cloud.google.com/about/locations).
 
 ```bash
@@ -147,14 +147,14 @@ Again, you can use environment variables or substitute them with values. The mea
 
 * `$CLUSTER_NAME` is the name of the cluster, you may choose one;
 * `$REGION` and `$ZONE`, please follow the link in the section above;
-* `$MASTER_MACHINE_TYPE` and `$WORKER_MACHINE_TYPE` can be chosen and composed from [this list](https://cloud.google.com/compute/docs/machine-resource);
+* `$MASTER_MACHINE_TYPE` and `$WORKER_MACHINE_TYPE` can be chosen from [this list](https://cloud.google.com/compute/docs/machine-resource);
 * `$NUM_WORKERS` is the number of total workers (the master is not included in this number) the master can utilize;
-* `$IMAGE_VERSION` is the operating system used for the cluster and can be choosen from [this list](https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-version-clusters).
+* `$IMAGE_VERSION` is the operating system used for the cluster and can be chosen from [this list](https://cloud.google.com/dataproc/docs/concepts/versioning/dataproc-version-clusters).
 
 ### Submitting a job in Dataproc
 
 ```bash
-gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME --region=$REGION --jar=gs://$BUCKET_NAME/andrp.jar -- "yarn" "gs://$BUCKET_NAME/weatherAUS-reduced.csv" "sim=$SIMULATION" "lim=$LIMIT_SAMPLES" "gs://$BUCKET_NAME/$OUTPUT_FILE" "$NUM_RUN" 
+gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME --region=$REGION --jar=gs://$BUCKET_NAME/andrp.jar -- "yarn" "gs://$BUCKET_NAME/weatherAUS-reduced.csv" "sim=$SIMULATION" "lim=$LIMIT_SAMPLES" "ex=$EXECUTION" "gs://$BUCKET_NAME/$OUTPUT_FILE" "$NUM_RUN" 
 ```
 
 The meaning of the unexplained variables is the following:
@@ -174,8 +174,18 @@ gsutil -m cp -r gs://bucket-weather-australian/$OUTPUT_FILE python_scripts/resul
 
 A separate Python script was developed to analyze the results. This script computes the averages and confidence intervals of the output metrics, and generates plots to illustrate the findings.
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/decisiontree.png" alt="Decision Tree plot" width="500" />
+### Strong scalability
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/randomforest.png" alt="Random Forest plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/images/knn.png" alt="kNN plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/randomforest.png" alt="Random Forest plot" width="500" />
+
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/knn.png" alt="kNN plot" width="500" />
+
+### Weak scalability
+
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/decisiontree.png" alt="Decision Tree plot" width="500" />
+
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/randomforest.png" alt="Random Forest plot" width="500" />
+
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/knn.png" alt="kNN plot" width="500" />
