@@ -176,16 +176,16 @@ A separate Python script was developed to analyze the results. This script compu
 
 ### Strong scalability
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/decisiontree.png" alt="Decision Tree plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/strong/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/randomforest.png" alt="Random Forest plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/strong/images/randomforest.png" alt="Random Forest plot" width="500" />
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/strong/images/knn.png" alt="kNN plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/strong/images/knn.png" alt="kNN plot" width="500" />
 
 ### Weak scalability
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/decisiontree.png" alt="Decision Tree plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/randomforest.png" alt="Random Forest plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/randomforest.png" alt="Random Forest plot" width="500" />
 
-<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/final/python-scripts/results/weak/images/knn.png" alt="kNN plot" width="500" />
+<img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/knn.png" alt="kNN plot" width="500" />
