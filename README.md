@@ -160,7 +160,7 @@ gcloud dataproc jobs submit spark --cluster=$CLUSTER_NAME --region=$REGION --jar
 The meaning of the unexplained variables is the following:
 
 * `$SIMULATION`, can either be `true` or `false`;
-* `$LIMIT_SAMPLES`, can either be `true` or `false`;
+* `$LIMIT_SAMPLES`, is an integer value that specify the number of samples to take;
 * `$EXECUTION`, can either be `distributed` or `sequential`;
 * `$OUTPUT_FILE`, is a string that identifies the output test file;
 * `$NUM_RUN`, is an integer value that identifies the number of times the simulation should be repeated.
