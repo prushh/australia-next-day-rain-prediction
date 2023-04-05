@@ -175,10 +175,10 @@ gsutil -m cp -r gs://bucket-weather-australian/$OUTPUT_FILE python_scripts/resul
 
 A separate Python script was developed to analyze the results. This script computes the averages and confidence intervals of the output metrics, and generates plots to illustrate the findings.
 
+### Strong scalability
+
 <details>
   <summary>Click me</summary>
-
-### Strong scalability
 
 In order to test the strong scalability, all the test were done on 10.000 samples of the dataset with the following cluster configurations:
 * 1 Worker, 4 Core
@@ -196,10 +196,10 @@ Where each worker uses an N1 processor with 4 core and 15 GB of Memory.
 
 </details>
 
+### Weak scalability
+
 <details>
   <summary>Click me</summary>
-
-### Weak scalability
 
 To test the weak scalability, the test were done on a growing size of samples doubling it when the number of available core doubles. In particular, the used configuration are the following:
 
