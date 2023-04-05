@@ -161,6 +161,7 @@ The meaning of the unexplained variables is the following:
 
 * `$SIMULATION`, can either be `true` or `false`;
 * `$LIMIT_SAMPLES`, can either be `true` or `false`;
+* `$EXECUTION`, can either be `distributed` or `sequential`;
 * `$OUTPUT_FILE`, is a string that identifies the output test file;
 * `$NUM_RUN`, is an integer value that identifies the number of times the simulation should be repeated.
 
@@ -174,7 +175,18 @@ gsutil -m cp -r gs://bucket-weather-australian/$OUTPUT_FILE python_scripts/resul
 
 A separate Python script was developed to analyze the results. This script computes the averages and confidence intervals of the output metrics, and generates plots to illustrate the findings.
 
+<details>
+  <summary>Click me</summary>
+
 ### Strong scalability
+
+In order to test the strong scalability, all the test were done on 10.000 samples of the dataset with the following cluster configurations:
+* 1 Worker, 4 Core
+* 2 Worker, 8 Core
+* 3 Worker, 12 Core
+* 4 Worker, 16 Core
+
+Where each worker uses an N1 processor with 4 core and 15 GB of Memory.
 
 <img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/strong/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
@@ -182,10 +194,26 @@ A separate Python script was developed to analyze the results. This script compu
 
 <img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/strong/images/knn.png" alt="kNN plot" width="500" />
 
+</details>
+
+<details>
+  <summary>Click me</summary>
+
 ### Weak scalability
+
+To test the weak scalability, the test were done on a growing size of samples doubling it when the number of available core doubles. In particular, the used configuration are the following:
+
+* 1 Worker, 2 Core, 2500 samples
+* 1 Worker, 4 Core, 5000 samples
+* 2 Worker, 8 Core, 10000 samples
+* 4 Worker, 16 Core, 20000 samples
+
+On these test the last 3 configurations are comparable with the previous one meanwhile the first has only 2 cores and 13 GB of memory.
 
 <img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/decisiontree.png" alt="Decision Tree plot" width="500" />
 
 <img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/randomforest.png" alt="Random Forest plot" width="500" />
 
 <img src="https://github.com/prushh/australia-next-day-rain-prediction/blob/main/python-scripts/results/weak/images/knn.png" alt="kNN plot" width="500" />
+
+</details>

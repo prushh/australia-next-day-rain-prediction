@@ -14,7 +14,7 @@ object Main extends App {
     private val datasetPath = args(1)
     private val simulation = if (args(2) == "sim=true") true else false
     private val limit = if (args(3) == "lim=true") 1000 else 10000
-    private val execution = if (args(4) == "ex=parallel") Executions.Distributed else Executions.Sequential
+    private val execution = if (args(4) == "ex=distributed") Executions.Distributed else Executions.Sequential
 
     private var classifier = ""
     private var outputPath = ""
