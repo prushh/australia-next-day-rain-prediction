@@ -6,14 +6,18 @@ import config.SparkProjectConfig
 import dataset.getDataPoints
 import util.OutputWriter
 
+import scala.util.matching.Regex
+
 object Main extends App {
     /*
      * Checking arguments.
      */
+
     private val master = args(0)
     private val datasetPath = args(1)
     private val simulation = if (args(2) == "sim=true") true else false
-    private val limit = if (args(3) == "lim=true") 1000 else 10000
+    private val numberPattern: Regex = "[0-9]+".r
+    private val limit = numberPattern.findFirstMatchIn(args(3)).getOrElse(10000).toString.toInt
     private val execution = if (args(4) == "ex=distributed") Executions.Distributed else Executions.Sequential
 
     private var classifier = ""
@@ -30,6 +34,7 @@ object Main extends App {
     println("Configuration:")
     println(s"- master: $master")
     println(s"- dataset path: $datasetPath")
+    println(s"- limit: $limit")
     println(s"- execution: $execution")
     if (!simulation) {
         println(s"- classifier: $classifier")
